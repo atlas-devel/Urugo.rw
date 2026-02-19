@@ -3,6 +3,8 @@ import MainLayout from "./components/Layouts/user/MainLayout";
 import BlankLayout from "./components/Layouts/user/BlankLayout";
 import Home from "./pages/Home";
 import LoginPage from "./components/LoginPage";
+import AdminLayout from "./components/Layouts/admin/AdminLayout";
+import Dashoboard from "./components/admin/Dashoboard";
 
 function App() {
   return (
@@ -15,6 +17,10 @@ function App() {
         {/* layout without navbar */}
         <Route element={<BlankLayout />}>
           <Route path="/login" element={<LoginPage />} />
+        </Route>
+        {/* dashboard routes */}
+        <Route element={<AdminLayout />}>
+          <Route path="/dashboard" element={<Dashoboard />} />
         </Route>
       </Routes>
     </main>

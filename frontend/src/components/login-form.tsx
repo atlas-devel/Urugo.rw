@@ -1,3 +1,5 @@
+import { error } from "better-auth/api";
+import { authClient } from "../lib/auth-client";
 import { cn } from "../lib/utils";
 import { Button } from "./ui/button";
 import {
@@ -20,6 +22,16 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const handleSocialLogin = async () => {
+    const { error } = await authClient.signIn.social({
+      provider: "google",
+      callbackURL: `${import.meta.env.VITE_APP_URL}/dashboard`,
+    });
+  };
+  if (error) {
+    console.error(error?.message);
+  }
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="bg-white border-blue-700/20 shadow-lg">
@@ -38,6 +50,7 @@ export function LoginForm({
                 <Button
                   variant="outline"
                   type="button"
+                  onClick={handleSocialLogin}
                   className="w-full border-blue-700 text-blue-700 hover:bg-blue-50 hover:text-blue-800 transition-colors flex items-center justify-center gap-2"
                 >
                   <img src="/google.svg" alt="Google" className="w-5 h-5" />

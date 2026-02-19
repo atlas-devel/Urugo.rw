@@ -13,16 +13,17 @@
     "@tailwindcss/vite": "^4.1.18",
     "@types/react-router-dom": "^5.3.3",
     "axios": "^1.13.5",
+    "better-auth": "^1.4.18",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "framer-motion": "^12.34.2",
     "lucide-react": "^0.574.0",
     "radix-ui": "^1.4.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.0",
     "tailwind-merge": "^3.4.1",
-    "tailwindcss": "^4.1.18",
-    "framer-motion": "^12.34.2"
+    "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
