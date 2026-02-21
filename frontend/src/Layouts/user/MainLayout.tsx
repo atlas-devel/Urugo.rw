@@ -1,18 +1,20 @@
 import { Outlet } from "react-router-dom";
-import Navbar from "../../user/Navbar";
-import MobileNav from "../../user/mobile/MobileNav";
-import MobileMenu from "../../user/mobile/MobileMenu";
+import Navbar from "../../components/user/Navbar";
+import MobileNav from "../../components/user/mobile/MobileNav";
+import MobileMenu from "../../components/user/mobile/MobileMenu";
 import type { JSX } from "react";
 import { useState } from "react";
+import Hero from "../../components/user/Home/Hero";
 
 function MainLayout(): JSX.Element {
   const [mobileMenu, setMobileMenu] = useState<boolean>(false);
   return (
-    <section className="w-screen">
+    <section className="w-full">
       <Navbar />
       <MobileNav setMobileMenu={setMobileMenu} />
       {mobileMenu && <MobileMenu setMobileMenu={setMobileMenu} />}
-      <div className="p-2 md:px-8 lg:px-12 py-2 md:py-7 ">
+      <Hero />
+      <div className="p-2 md:px-12 lg:px-20">
         <Outlet />
       </div>
     </section>

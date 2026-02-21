@@ -28,8 +28,8 @@ export function LoginForm({
       callbackURL: `${import.meta.env.VITE_APP_URL}/dashboard`,
     });
   };
-  if (error) {
-    console.error(error?.message);
+  if (error.message) {
+    console.error(error.message);
   }
 
   return (

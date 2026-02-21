@@ -1,3 +1,9 @@
+import {
+  adminClient,
+  phoneNumberClient,
+  usernameClient,
+  inferAdditionalFields
+} from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 export const authClient = createAuthClient({
   /** The base URL of the server (optional if you're using the same domain) */
@@ -5,5 +11,17 @@ export const authClient = createAuthClient({
     import.meta.env.NODE_ENV === "production"
       ? import.meta.env.VITE_PRODUCTION_URL
       : import.meta.env.VITE_DEVELOPMENT_URL,
-});
 
+  plugins: [
+    adminClient(),
+    usernameClient(),
+    phoneNumberClient(),
+    inferAdditionalFields({
+      user: {
+        nationalId: {
+          type: "string",
+        },
+      },
+    }),
+  ],
+});

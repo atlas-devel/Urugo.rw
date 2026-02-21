@@ -1,9 +1,9 @@
 import { Route, Routes } from "react-router-dom";
-import MainLayout from "./components/Layouts/user/MainLayout";
-import BlankLayout from "./components/Layouts/user/BlankLayout";
+import MainLayout from "./Layouts/user/MainLayout";
+import BlankLayout from "./Layouts/user/BlankLayout";
 import Home from "./pages/Home";
 import LoginPage from "./components/LoginPage";
-import AdminLayout from "./components/Layouts/admin/AdminLayout";
+import AdminLayout from "./Layouts/admin/AdminLayout";
 import Dashoboard from "./components/admin/Dashoboard";
 
 function App() {
