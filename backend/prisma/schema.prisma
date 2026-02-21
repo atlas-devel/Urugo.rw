@@ -24,8 +24,23 @@ model User {
   sessions      Session[]
   accounts      Account[]
 
+  role                String?
+  banned              Boolean?  @default(false)
+  banReason           String?
+  banExpires          DateTime?
+  username            String?
+  displayUsername     String?
+  phoneNumber         String?
+  phoneNumberVerified Boolean?
+
+  nationalId String
+
+  address String
+
   @@unique([email])
   @@map("user")
+  @@unique([username])
+  @@unique([phoneNumber])
 }
 
 model Session {
@@ -38,6 +53,8 @@ model Session {
   userAgent String?
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  impersonatedBy String?
 
   @@unique([token])
   @@index([userId])
@@ -74,4 +91,382 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+// enums
+enum PropertyStatus {
+  AVAILABLE
+  OCCUPIED
+  MAINTENANCE
+  INACTIVE
+  PENDING_APPROVAL
+}
+
+enum PropertyType {
+  APARTMENT
+  HOUSE
+  STUDIO
+  ROOM
+  COMMERCIAL
+}
+enum LeaseStatus {
+  PENDING
+  ACTIVE
+  EXPIRED
+  TERMINATED
+  GRACE_PERIOD
+}
+enum PaymentType {
+  INITIAL_PAYMENT
+  MONTHLY_RENT
+  PENALTY
+  CUSTOMIZATION
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  OVERDUE
+  PARTIAL
+  FAILED
+  GRACE
+}
+
+// tables
+// admin action
+model Property {
+  // Primary Key
+  id         String   @id @default(cuid())
+  landlordId String
+  
+  
+  // Basic Information
+  propety_number     String
+  address    String
+  city       String   @default("Kigali")
+  district   String
+  sector     String?
+  
+ 
+  
+  // Property Specifications
+  bedrooms   Int
+  bathrooms  Int
+  
+  // Amenities (Boolean)
+  hasParking  Boolean @default(false)
+  hasWifi     Boolean @default(false)
+  
+  // Financial Details
+  securityIncluded Boolean @default(false)
+  monthlyRent          Int @default(0)
+  initialPaymentMonths Int     @default(0)
+  
+  // Utilities payment
+  includesWater      Boolean  @default(false)
+  includesElectricity Boolean @default(false)
+
+  // propty type
+  property_type PropertyType @default(APARTMENT)
+  
+  // TODO allow manager to add more utilities in the future
+  
+  // Media & Documents
+  description String?  @db.Text
+  property_photos      String[] // Array of URLs
+  amenities   String[] // Array of strings
+  contractUrl String?  // Lease template PDF URL
+  
+  // Status & Admin Control
+  status     PropertyStatus @default(PENDING_APPROVAL)
+  isActive   Boolean        @default(true)
+  approvedAt DateTime?
+  approvedBy String?        // Admin user ID
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  landlord User   @relation( fields: [landlordId], references: [id], onDelete: Cascade)
+  leases   Lease[]
+  
+  @@index([landlordId])
+  @@index([status])
+  @@index([isActive])
+  @@index([city, district])
+  @@map("properties")
+}
+
+
+// landlord action
+model Lease {
+  // Primary Key
+  id         String @id @default(cuid())
+  propertyId String
+  renterId   String
+  landlordId String // Denormalized for quick queries
+  
+  // Lease Period
+  startDate DateTime
+  endDate   DateTime?
+  
+  // Grace Period (Extra Days)
+  graceDays    Int       @default(0)
+  graceEndDate DateTime? // Calculated: endDate + graceDays
+  
+  // Financial Terms
+  // fetch from propety and save here to avoid issues when landlord changes property details after lease is signed
+  monthlyRent     Int
+  initialPayment  Int
+  securityDeposit Int
+  
+  // Utilities
+  // fetch from propety and save here to avoid issues when landlord changes property details after lease is signed
+  includesWater          Boolean  @default(false)
+  includesElectricity    Boolean  @default(false)
+  
+  
+  // Contract
+  // update after lease agreement are filled
+  contractUrl String? // Signed contract PDF URL
+  
+  // Status
+  status   LeaseStatus @default(PENDING)
+  isActive Boolean     @default(true)
+  notes    String?     @db.Text
+  
+  // Timestamps
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  activatedAt DateTime? // When admin approved
+  
+  // Relations
+  property      Property       @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  renter        User           @relation("RenterLeases", fields: [renterId], references: [id])
+  payments      Payment[]
+  
+  
+  @@index([propertyId])
+  @@index([renterId])
+  @@index([landlordId])
+  @@index([status])
+  @@index([isActive])
+  @@index([endDate])
+  @@index([graceEndDate])
+  @@map("leases")
+}
+
+model Payment {
+  // Primary Key
+  id         String @id @default(cuid())
+  renterId   String // Denormalized for quick queries
+  landlordId String // Denormalized for quick queries
+  
+  // Payment Details
+  amount      Int
+  paymentType PaymentType
+  status      PaymentStatus @default(PENDING)
+  
+  // Dates
+  dueDate  DateTime
+  paidDate DateTime?
+  
+  // Payment Method
+  paymentMethod  String? // "mobile_money", "card", "bank_transfer", "cash"
+  transactionId  String? @unique
+  flutterwaveRef String? // Flutterwave/PayPack reference
+  
+  // Late Payment
+  daysOverdue   Int      @default(0)
+  penaltyAmount Decimal? @db.Decimal(10, 2)
+  
+  // Documentation
+  receiptUrl String? // Receipt PDF URL
+  notes      String? @db.Text
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  renter User  @relation( fields: [renterId], references: [id])
+  
+  @@index([renterId])
+  @@index([landlordId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([paidDate])
+  @@index([paymentType])
+  @@map("payments")
+}
+
+// UNAPPROVED MODELS
+
+model RenterBlacklist {
+  // Primary Key
+  id         String @id @default(cuid())
+  renterId   String
+  reportedBy String // Landlord ID who reported
+  
+  // Blacklist Details
+  status          BlacklistStatus @default(WARNING)
+  reason          String          @db.Text
+  unpaidAmount    Decimal?        @db.Decimal(10, 2)
+  propertyAddress String?
+  
+  // Admin Verification
+  isVerified Boolean   @default(false)
+  verifiedBy String?   // Admin user ID
+  verifiedAt DateTime?
+  
+  // Duration
+  blacklistedUntil DateTime? // null = permanent ban
+  
+  // Additional Info
+  notes String? @db.Text
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  renter User @relation("BlacklistedRenter", fields: [renterId], references: [id])
+  
+  @@index([renterId])
+  @@index([status])
+  @@index([isVerified])
+  @@index([reportedBy])
+  @@map("renter_blacklist")
+}
+
+enum BlacklistStatus {
+  GOOD_STANDING
+  WARNING
+  BLACKLISTED
+  BANNED
+}
+
+model RenterFeedback {
+  // Primary Key
+  id       String  @id @default(cuid())
+  renterId String  // Renter being reviewed
+  authorId String  // Landlord writing review
+  leaseId  String? // Which lease this is about
+  
+  // Ratings
+  rating            Int     // 1-5 stars
+  paymentHistory    String? // "EXCELLENT", "GOOD", "FAIR", "POOR"
+  propertyCondition String? @db.Text
+  comments          String? @db.Text
+  
+  // Recommendation
+  wouldRentAgain Boolean @default(true)
+  isVerified     Boolean @default(false)
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  renter User @relation("FeedbackSubject", fields: [renterId], references: [id])
+  author User @relation("FeedbackAuthor", fields: [authorId], references: [id])
+  
+  @@unique([renterId, authorId, leaseId])
+  @@index([renterId])
+  @@index([authorId])
+  @@index([rating])
+  @@map("renter_feedback")
+}
+
+model Notification {
+  // Primary Key
+  id         String @id @default(cuid())
+  
+  // Notification Type & Recipients
+  type       NotificationType
+  senderId   String? // null = system-generated
+  receiverId String
+  leaseId    String? // Related lease if applicable
+  
+  // Content
+  title     String
+  message   String @db.Text
+  actionUrl String? // URL to navigate to
+  
+  // Status
+  isRead Boolean   @default(false)
+  isSent Boolean   @default(false)
+  sentAt DateTime?
+  
+  // Delivery Channels
+  emailSent Boolean @default(false)
+  smsSent   Boolean @default(false)
+  
+  // Timestamp
+  createdAt DateTime @default(now())
+  
+  // Relations
+  sender   User?  @relation("NotificationSender", fields: [senderId], references: [id])
+  receiver User   @relation("NotificationReceiver", fields: [receiverId], references: [id])
+  lease    Lease? @relation(fields: [leaseId], references: [id])
+  
+  @@index([receiverId])
+  @@index([isRead])
+  @@index([type])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+enum NotificationType {
+  PAYMENT_DUE
+  PAYMENT_OVERDUE
+  GRACE_ENDING
+  LEASE_EXPIRING
+  PROPERTY_APPROVED
+  RENTER_REGISTERED
+  BLACKLIST_ALERT
+}
+
+model AdminLog {
+  // Primary Key
+  id String @id @default(cuid())
+  
+  // Admin & Action
+  adminId String
+  action  String // "APPROVE_PROPERTY", "BLACKLIST_VERIFY", etc.
+  
+  // Target
+  targetType String // "Property", "User", "Lease", "Payment"
+  targetId   String // ID of the affected entity
+  
+  // Details
+  details   String? @db.Text
+  ipAddress String?
+  
+  // Timestamp
+  createdAt DateTime @default(now())
+  
+  @@index([adminId])
+  @@index([action])
+  @@index([targetType])
+  @@index([createdAt])
+  @@map("admin_logs")
+}
+
+model SystemSettings {
+  // Primary Key
+  id String @id @default(cuid())
+  
+  // Setting
+  key         String @unique
+  value       String
+  description String?
+  
+  // Metadata
+  updatedBy String?
+  updatedAt DateTime @updatedAt
+  
+  @@index([key])
+  @@map("system_settings")
 }

@@ -1,5 +1,6 @@
 import { betterAuth, url } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { admin, username, phoneNumber } from "better-auth/plugins";
 import prisma from "./prisma";
 // If your Prisma file is located elsewhere, you can change the path
 
@@ -50,4 +51,26 @@ export const auth = betterAuth({
     max: 100, // limit each IP to 100 requests per windowMs
   },
   trustedOrigins: ["http://localhost:5173"],
+  plugins: [
+    admin({
+      adminRoles: ["admin"],
+      allowImpersonation: true,
+      allowUserDelete: true,
+      allowRoleChanger: true,
+    }),
+    username(),
+    phoneNumber(),
+  ],
+  user: {
+    additionalFields: {
+      nationalId: {
+        type: "string",
+        required: true,
+      },
+      address: {
+        type: "string",
+        required: true,
+      },
+    },
+  },
 });
