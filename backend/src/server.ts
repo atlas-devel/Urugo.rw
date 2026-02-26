@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import { auth } from "./utils/auth";
 import { toNodeHandler } from "better-auth/node";
 import "dotenv/config";
+import adminRouter from "./routes/admin.routes";
 
 const app: Express = express();
 
@@ -23,9 +24,7 @@ app.use(cookieParser());
 app.all("/api/auth/*", toNodeHandler(auth));
 
 app.use(express.json());
-app.get("/test", (Req: Request, res: Response) =>
-  res.json({ message: "Hello World!" }),
-);
+app.use("/api/auth/", adminRouter);
 
 const PORT: number = Number(process.env.PORT);
 

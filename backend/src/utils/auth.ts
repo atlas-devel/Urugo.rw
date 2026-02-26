@@ -53,10 +53,11 @@ export const auth = betterAuth({
   trustedOrigins: ["http://localhost:5173"],
   plugins: [
     admin({
-      adminRoles: ["admin"],
+      adminRoles: ["ADMIN", "AGENT"],
       allowImpersonation: true,
       allowUserDelete: true,
       allowRoleChanger: true,
+      defaultRole: "guest"
     }),
     username(),
     phoneNumber(),

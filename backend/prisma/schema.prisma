@@ -16,7 +16,7 @@ datasource db {
 model User {
   id            String    @id
   name          String
-  email         String
+  email         String 
   emailVerified Boolean   @default(false)
   image         String?
   createdAt     DateTime  @default(now())
@@ -24,7 +24,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
 
-  role                String?
+  role                Role? @default(RENT)
   banned              Boolean?  @default(false)
   banReason           String?
   banExpires          DateTime?
@@ -61,10 +61,34 @@ model User {
   // Add the opposite relation for Notification.sender (NotificationSender)
   notificationsSent Notification[] @relation("NotificationSender")
 
+  // Add the opposite relation for Invitation.user
+  invitations Invitation[]
+
   @@unique([email])
   @@unique([username])
   @@unique([phoneNumber])
   @@map("user")
+}
+// signUp invitations 
+model Invitation {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  token     String   @unique
+  userId    String   @unique // references the pre‑created user
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("invitations")
+}
+
+enum Role {
+  ADMIN
+  LANDLORD
+  RENT
+  AGENT
 }
 
 model Session {
@@ -185,7 +209,8 @@ model Property {
   // Basic Information
   propety_number String
   address        String
-  city           String  @default("Kigali")
+  city           String  @default("Kigali city")
+  province       String  @default("Kigali")
   district       String
   sector         String?
 
