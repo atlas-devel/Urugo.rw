@@ -1,11 +1,9 @@
-// routes/admin.routes.ts
-import { Router } from "express";
-import { createAgent } from "../controllers/admin.controller";
-import { requireAdmin } from "../middleware/adminSession.middleware";
+import type { Router } from "express";
+import express from "express";
+import { createUser } from "../controllers/admin.controller";
 
-const adminRouter = Router();
+const AdminRoute: Router = express.Router();
 
-// All routes here are protected by requireAdmin
-adminRouter.post("/agents", requireAdmin, createAgent);
+AdminRoute.post("/create-user", createUser);
 
-export default adminRouter;
+export default AdminRoute;

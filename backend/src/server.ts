@@ -2,10 +2,9 @@ import express from "express";
 import type { Express, Request, Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { auth } from "./utils/auth";
-import { toNodeHandler } from "better-auth/node";
 import "dotenv/config";
-import adminRouter from "./routes/admin.routes";
+import publicRoute from "./routes/public.routes";
+import AdminRoute from "./routes/admin.routes";
 
 const app: Express = express();
 
@@ -21,10 +20,19 @@ app.use(
   }),
 );
 app.use(cookieParser());
-app.all("/api/auth/*", toNodeHandler(auth));
-
 app.use(express.json());
-app.use("/api/auth/", adminRouter);
+
+// middleware
+
+app.use("/public/auth", publicRoute);
+app.use("/admin", AdminRoute);
+
+// 404 not found route
+app.use((req: Request, res: Response) => {
+  res.status(500).json({
+    message: "route not found",
+  });
+});
 
 const PORT: number = Number(process.env.PORT);
 

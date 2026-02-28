@@ -14,28 +14,29 @@ datasource db {
 }
 
 model User {
-  id            String    @id
+  id            String    @id @default(cuid())
   name          String
-  email         String 
+  email         String
   emailVerified Boolean   @default(false)
   image         String?
+  password      String
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  sessions      Session[]
-  accounts      Account[]
+  role          Role      @default(GUEST)
+  banned        Boolean?  @default(false)
+  banReason     String?
+  banExpires    DateTime?
+  // username removed
+  phoneNumber   String
 
-  role                Role? @default(RENT)
-  banned              Boolean?  @default(false)
-  banReason           String?
-  banExpires          DateTime?
-  username            String?
-  displayUsername     String?
-  phoneNumber         String?
-  phoneNumberVerified Boolean?
-
-  nationalId String @default("")
+  nationalId   String @default("") @unique
+  issueCountry String @default("")
 
   address String @default("")
+
+  otp           String?
+  otp_expiry    DateTime?
+  refreshTokens RefreshToken[]
 
   // Add the opposite relation for Property.landlord
   properties Property[] @relation("UserToProperties")
@@ -61,27 +62,21 @@ model User {
   // Add the opposite relation for Notification.sender (NotificationSender)
   notificationsSent Notification[] @relation("NotificationSender")
 
-  // Add the opposite relation for Invitation.user
-  invitations Invitation[]
-
   @@unique([email])
-  @@unique([username])
+  // @@unique([username]) removed
   @@unique([phoneNumber])
   @@map("user")
 }
-// signUp invitations 
-model Invitation {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  token     String   @unique
-  userId    String   @unique // references the pre‑created user
-  expiresAt DateTime
-  usedAt    DateTime?
-  createdAt DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id])
+model RefreshToken {
+  id          String   @id @default(cuid())
+  hashedToken String   @unique
+  expiresAt   DateTime
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
 
-  @@map("invitations")
+  @@map("refresh_tokens")
 }
 
 enum Role {
@@ -89,56 +84,7 @@ enum Role {
   LANDLORD
   RENT
   AGENT
-}
-
-model Session {
-  id        String   @id
-  expiresAt DateTime
-  token     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  ipAddress String?
-  userAgent String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  impersonatedBy String?
-
-  @@unique([token])
-  @@index([userId])
-  @@map("session")
-}
-
-model Account {
-  id                    String    @id
-  accountId             String
-  providerId            String
-  userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  accessToken           String?
-  refreshToken          String?
-  idToken               String?
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
-  scope                 String?
-  password              String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
-
-  @@index([userId])
-  @@map("account")
-}
-
-model Verification {
-  id         String   @id
-  identifier String
-  value      String
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  @@index([identifier])
-  @@map("verification")
+  GUEST
 }
 
 // enums
