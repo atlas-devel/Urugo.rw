@@ -29,7 +29,7 @@ model User {
   // username removed
   phoneNumber   String
 
-  nationalId   String @default("") @unique
+  nationalId   String @unique @default("")
   issueCountry String @default("")
 
   address String @default("")
@@ -144,6 +144,7 @@ enum NotificationType {
   RENTER_REGISTERED
   BLACKLIST_ALERT
 }
+
 enum District {
   BUGESERA
   BURERA
@@ -184,16 +185,16 @@ model Property {
   landlordId String
 
   // Basic Information
-  propety_number String  @unique // Unique property identifier e.g. GS-0000001
+  propety_number String   @unique // Unique property identifier e.g. GS-0000001
   address        String
-  city           String  @default("Kigali city")
-  province       String  @default("Kigali")
-  district       District 
+  city           String   @default("Kigali city")
+  province       String   @default("Kigali")
+  district       District
   sector         String?
 
   // Property Specifications
   bedrooms  Int
-  bathrooms Int
+  bathrooms Int @default(0)
 
   // Amenities (Boolean)
   hasParking Boolean @default(false)
@@ -203,7 +204,7 @@ model Property {
   securityIncluded     Boolean @default(false)
   monthlyRent          Int     @default(0)
   initialPaymentMonths Int     @default(0)
-  initialPaymentPrice Int @default(0) // Calculated: monthlyRent * initialPaymentMonths
+  initialPaymentPrice  Int     @default(0) // Calculated: monthlyRent * initialPaymentMonths
 
   // Utilities payment
   includesWater       Boolean @default(false)
@@ -218,7 +219,10 @@ model Property {
   description     String?  @db.Text
   property_photos String[] // Array of URLs
   amenities       String[] // Array of strings
-  contractUrl     String? // Lease template PDF URL
+  contractUrl     String? // Lease template PDF URL--- will be used to generate lease agreement when renter signs lease
+  // the lease aggrement, will make a contract template and fill in the details when renter signs lease
+  // then save the generated lease agreement URL in the property contractUrl field, and also in the lease contractUrl field for easy access
+  //user will be able to download or view the lease agreement/contract 
 
   // Status & Admin Control
   status     PropertyStatus @default(PENDING_APPROVAL)

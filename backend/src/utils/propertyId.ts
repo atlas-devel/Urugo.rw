@@ -35,6 +35,16 @@ const districtInitials: Record<string, string> = {
 export function generatePropertyId(
   district: string,
   latestPropertyNumber: string | null,
-) {
-  const prefix = districtInitials[district.toUpperCase()];
+): string {
+  const prefix: string = districtInitials[district.toUpperCase()];
+  if (!prefix) {
+    throw new Error(`Invalid district name: ${district}`);
+  }
+
+  if (!latestPropertyNumber) {
+    return `${prefix}-0000001`;
+  }
+
+  const newNumberPart = Number(latestPropertyNumber?.split("-")[1]) + 1;
+  return `${prefix}-${newNumberPart.toString().padStart(7, "0")}`;
 }

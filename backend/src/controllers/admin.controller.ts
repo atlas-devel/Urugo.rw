@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import type { Request, Response } from "express";
 import prisma from "../utils/prisma";
 import { generatePropertyId } from "../utils/propertyId";
+import { District } from "../generated/prisma/enums";
 
 export const createUser = async (req: Request, res: Response) => {
   const {
@@ -138,7 +139,7 @@ export const createUser = async (req: Request, res: Response) => {
 };
 
 export const createProperty = async (req: Request, res: Response) => {
-  const { landlordId } = req.params;
+  let { landlordId } = req.params;
   const {
     address,
     city,
@@ -161,22 +162,102 @@ export const createProperty = async (req: Request, res: Response) => {
     amenities,
   } = req.body;
 
-  try {
-    // query the last generated property number
-    const latestPropertyNumber = await prisma.property.findFirst({
-      where: { district },
-      orderBy: { createdAt: "desc" },
-      select: { propety_number: true },
-    });
+  if (!landlordId) {
+    res
+      .status(400)
+      .json({ success: false, message: "Landlord ID is required" });
+    return;
+  }
+  if (
+    !address ||
+    !city ||
+    !province ||
+    !district ||
+    !sector ||
+    !bedrooms ||
+    !bathrooms ||
+    !monthlyRent ||
+    !property_type ||
+    !property_photos
+  ) {
+    res
+      .status(400)
+      .json({ success: false, message: "Important Fields are missing" });
+    return;
+  }
 
-    let newPropertyNumber;
-    if (latestPropertyNumber) {
-      newPropertyNumber = generatePropertyId(
-        district,
-        latestPropertyNumber.propety_number,
-      );
-    }
-  } catch (error) {}
+  try {
+    // make transaction to ensure one property number is generated at a time for a district to avoid duplicates in concurrent requests
+    const property = await prisma.$transaction(
+      async (tx) => {
+        // query the last generated property number
+        const latestPropertyNumber = await tx.property.findFirst({
+          where: { district: district.toUpperCase() },
+          orderBy: { createdAt: "desc" },
+          select: { propety_number: true },
+        });
+
+        let newPropertyNumber: string;
+
+        if (!latestPropertyNumber) {
+          newPropertyNumber = generatePropertyId(district, null);
+        } else {
+          newPropertyNumber = generatePropertyId(
+            district,
+            latestPropertyNumber.propety_number,
+          );
+        }
+
+        const adminApproval = req.admin_name as string; //from auth middleware
+
+        const newProperty = {
+          landlordId: landlordId as string,
+          propety_number: newPropertyNumber,
+          address: address.toUpperCase() as District,
+          city,
+          province,
+          district,
+          sector,
+          bedrooms,
+          bathrooms,
+          hasParking,
+          hasWifi,
+          securityIncluded,
+          monthlyRent,
+          initialPaymentMonths,
+          initialPaymentPrice,
+          includesWater,
+          includesElectricity,
+          property_type,
+          description,
+          property_photos,
+          amenities,
+          approvedBy: adminApproval,
+          approvedAt: new Date(),
+        };
+
+        return await tx.property.create({
+          data: newProperty,
+        });
+      },
+
+      {
+        isolationLevel: "Serializable",
+      },
+    );
+    res.status(201).json({
+      success: true,
+      message: "Property created successfully",
+      data: property,
+    });
+  } catch (error) {
+    console.error("Error creating property:", error); //debug log
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: "Error: " + error,
+    });
+  }
 };
 
 export const updateProperty = async (req: Request, res: Response) => {};
