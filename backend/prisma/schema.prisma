@@ -144,6 +144,37 @@ enum NotificationType {
   RENTER_REGISTERED
   BLACKLIST_ALERT
 }
+enum District {
+  BUGESERA
+  BURERA
+  GAKENKE
+  GASABO
+  GATSIBO
+  GICUMBI
+  GISAGARA
+  HUYE
+  KAMONYI
+  KARONGI
+  KAYONZA
+  KICUKIRO
+  KIREHE
+  MUHANGA
+  MUSANZE
+  NGOMA
+  NGORORERO
+  NYABIHU
+  NYAGATARE
+  NYAMAGABE
+  NYAMASHEKE
+  NYANZA
+  NYARUGENGE
+  RUBAVU
+  RUHANGO
+  RULINDO
+  RUSIZI
+  RUTSIRO
+  RWAMAGANA
+}
 
 // tables
 // admin action
@@ -153,11 +184,11 @@ model Property {
   landlordId String
 
   // Basic Information
-  propety_number String
+  propety_number String  @unique // Unique property identifier e.g. GS-0000001
   address        String
   city           String  @default("Kigali city")
   province       String  @default("Kigali")
-  district       String
+  district       District 
   sector         String?
 
   // Property Specifications
@@ -172,6 +203,7 @@ model Property {
   securityIncluded     Boolean @default(false)
   monthlyRent          Int     @default(0)
   initialPaymentMonths Int     @default(0)
+  initialPaymentPrice Int @default(0) // Calculated: monthlyRent * initialPaymentMonths
 
   // Utilities payment
   includesWater       Boolean @default(false)

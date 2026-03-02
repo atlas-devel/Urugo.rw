@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import type { Request, Response } from "express";
 import prisma from "../utils/prisma";
+import { generatePropertyId } from "../utils/propertyId";
 
 export const createUser = async (req: Request, res: Response) => {
   const {
@@ -99,7 +100,6 @@ export const createUser = async (req: Request, res: Response) => {
       });
       return;
     }
-     
   }
 
   const validateEmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$/.test(
@@ -136,5 +136,57 @@ export const createUser = async (req: Request, res: Response) => {
     return;
   }
 };
+
+export const createProperty = async (req: Request, res: Response) => {
+  const { landlordId } = req.params;
+  const {
+    address,
+    city,
+    province,
+    district,
+    sector,
+    bedrooms,
+    bathrooms,
+    hasParking,
+    hasWifi,
+    securityIncluded,
+    monthlyRent,
+    initialPaymentMonths,
+    initialPaymentPrice,
+    includesWater,
+    includesElectricity,
+    property_type,
+    description,
+    property_photos,
+    amenities,
+  } = req.body;
+
+  try {
+    // query the last generated property number
+    const latestPropertyNumber = await prisma.property.findFirst({
+      where: { district },
+      orderBy: { createdAt: "desc" },
+      select: { propety_number: true },
+    });
+
+    let newPropertyNumber;
+    if (latestPropertyNumber) {
+      newPropertyNumber = generatePropertyId(
+        district,
+        latestPropertyNumber.propety_number,
+      );
+    }
+  } catch (error) {}
+};
+
+export const updateProperty = async (req: Request, res: Response) => {};
+
+export const deleteProperty = async (req: Request, res: Response) => {};
+
+export const getAllProperties = async (req: Request, res: Response) => {};
+
+export const getPropetiesDetails = async (req: Request, res: Response) => {};
+
+export const banUser = async (req: Request, res: Response) => {};
 
 //TODO: make unban user
