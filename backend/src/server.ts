@@ -5,6 +5,8 @@ import cookieParser from "cookie-parser";
 import "dotenv/config";
 import publicRoute from "./routes/public.routes";
 import AdminRoute from "./routes/admin.routes";
+import { userInfo } from "./middleware/public.middleware";
+import { ProtectedRoute } from "./middleware/admin.middleware";
 
 const app: Express = express();
 
@@ -25,7 +27,7 @@ app.use(express.json());
 // middleware
 
 app.use("/public/auth", publicRoute);
-app.use("/admin", AdminRoute);
+app.use("/admin", userInfo, ProtectedRoute, AdminRoute);
 
 // 404 not found route
 app.use((req: Request, res: Response) => {

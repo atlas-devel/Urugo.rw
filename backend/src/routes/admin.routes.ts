@@ -1,9 +1,12 @@
 import type { Router } from "express";
 import express from "express";
-import { createUser } from "../controllers/admin.controller";
+import { createProperty, createUser } from "../controllers/admin.controller";
 
 const AdminRoute: Router = express.Router();
 
-AdminRoute.post("/create-user", createUser);
+AdminRoute.post("/create-user", createUser).post(
+  "/create-property",
+  createProperty,
+);
 
 export default AdminRoute;

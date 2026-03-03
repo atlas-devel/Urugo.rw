@@ -208,7 +208,7 @@ export const createProperty = async (req: Request, res: Response) => {
           );
         }
 
-        const adminApproval = req.admin_name as string; //from auth middleware
+        const adminApproval = req.userInfo?.name as string; //from auth middleware
 
         const newProperty = {
           landlordId: landlordId as string,
@@ -260,13 +260,283 @@ export const createProperty = async (req: Request, res: Response) => {
   }
 };
 
-export const updateProperty = async (req: Request, res: Response) => {};
+export const updateProperty = async (req: Request, res: Response) => {
+  const propertyId = req.params.propertyId as string;
+  const {
+    address,
+    city,
+    province,
+    district,
+    sector,
+    bedrooms,
+    bathrooms,
+    hasParking,
+    hasWifi,
+    securityIncluded,
+    monthlyRent,
+    initialPaymentMonths,
+    initialPaymentPrice,
+    includesWater,
+    includesElectricity,
+    property_type,
+    description,
+    property_photos,
+    amenities,
+    status,
+    isActive,
+  } = req.body;
 
-export const deleteProperty = async (req: Request, res: Response) => {};
+  if (
+    !address &&
+    !city &&
+    !province &&
+    !district &&
+    !sector &&
+    !bedrooms &&
+    !bathrooms &&
+    !hasParking &&
+    !hasWifi &&
+    !securityIncluded &&
+    !monthlyRent &&
+    !initialPaymentMonths &&
+    !initialPaymentPrice &&
+    !includesWater &&
+    !includesElectricity &&
+    !property_type &&
+    !description &&
+    !property_photos &&
+    !amenities &&
+    status === undefined &&
+    isActive === undefined
+  ) {
+    res.status(400).json({
+      success: false,
+      message: "At least one field is required to update the property",
+    });
+    return;
+  }
 
-export const getAllProperties = async (req: Request, res: Response) => {};
+  if (!propertyId) {
+    res
+      .status(400)
+      .json({ success: false, message: "Property ID is required" });
+    return;
+  }
 
-export const getPropetiesDetails = async (req: Request, res: Response) => {};
+  try {
+    const existingProperty = await prisma.property.findUnique({
+      where: { id: propertyId },
+      select: { id: true },
+    });
+
+    if (!existingProperty) {
+      res.status(404).json({ success: false, message: "Property not found" });
+      return;
+    }
+    const updatedProperty = await prisma.property.update({
+      where: { id: propertyId },
+      data: {
+        address: address?.toUpperCase(),
+        city,
+        province,
+        district,
+        sector,
+        bedrooms,
+        bathrooms,
+        hasParking,
+        hasWifi,
+        securityIncluded,
+        monthlyRent,
+        initialPaymentMonths,
+        initialPaymentPrice,
+        includesWater,
+        includesElectricity,
+        property_type,
+        description,
+        property_photos,
+        amenities,
+        status,
+        isActive,
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Property updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating property:", error); //debug log
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: "Error: " + error,
+    });
+  }
+};
+
+export const deleteProperty = async (req: Request, res: Response) => {
+  const propertyId = req.params.propertyId as string;
+
+  if (!propertyId) {
+    res
+      .status(400)
+      .json({ success: false, message: "Property ID is required" });
+    return;
+  }
+  try {
+    const existingProperty = await prisma.property.findUnique({
+      where: { id: propertyId },
+      select: { id: true },
+    });
+    if (!existingProperty) {
+      res.status(404).json({ success: false, message: "Property not found" });
+      return;
+    }
+    const deleteProperty = await prisma.property.delete({
+      where: { id: propertyId },
+    });
+
+    //add admin log here to log the deleted property with req.userInfo?.name as the admin who performed the deletion
+
+    res.status(200).json({
+      success: true,
+      message: "Property deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting property:", error); //debug log
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: "Error: " + error,
+    });
+  }
+};
+
+export const getAllProperties = async (req: Request, res: Response) => {
+  const page = Number(req.query.page) || 1;
+  const limit = 15;
+  const skip = (page - 1) * limit;
+
+  try {
+    const [properties, totalProperties] = await Promise.all([
+      await prisma.property.findMany({
+        skip,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          address: true,
+          city: true,
+          district: true,
+          monthlyRent: true,
+          property_type: true,
+          property_photos: true,
+          isActive: true,
+          status: true,
+          approvedBy: true,
+        },
+      }),
+      await prisma.property.count(),
+    ]);
+    const totalPages = Math.ceil(totalProperties / limit);
+
+    if (properties.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: "No properties found",
+        data: {
+          properties: [],
+          totalProperties,
+          totalPages: 0,
+          currentPage: page,
+        },
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Properties fetched successfully",
+      data: {
+        properties,
+        totalProperties,
+        totalPages,
+        currentPage: page,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching properties:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: "Error: " + error,
+    });
+  }
+};
+
+export const getPropertyById = async (req: Request, res: Response) => {
+  const id = req.params.id as string;
+
+  try {
+    const property = await prisma.property.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        property_photos: true,
+        address: true,
+        city: true,
+        province: true,
+        district: true,
+        sector: true,
+        bedrooms: true,
+        bathrooms: true,
+        hasParking: true,
+        hasWifi: true,
+        securityIncluded: true,
+        monthlyRent: true,
+        initialPaymentMonths: true,
+        includesWater: true,
+        includesElectricity: true,
+        property_type: true,
+        status: true,
+        description: true,
+        amenities: true,
+
+        approvedBy: true, //not in public
+        createdAt: true, //not in public
+        contractUrl: true, //not in public
+        approvedAt:true,//not in public
+
+        landlord: {
+          select: {
+            name: true,
+            email: true,
+            phoneNumber: true,
+          },
+        },
+      },
+    });
+
+    if (!property) {
+      return res.status(404).json({
+        success: false,
+        message: "Property not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Property fetched successfully",
+      data: property,
+    });
+  } catch (error) {
+    console.error("Error fetching property:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: "Error: " + error,
+    });
+  }
+};
 
 export const banUser = async (req: Request, res: Response) => {};
 
