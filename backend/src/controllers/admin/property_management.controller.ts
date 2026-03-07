@@ -199,7 +199,7 @@ export const updateProperty = async (req: Request, res: Response) => {
       res.status(404).json({ success: false, message: "Property not found" });
       return;
     }
-    if (district !== existingProperty.district) {
+    if (district && district !== existingProperty.district) {
       const latestPropertyNumber = await prisma.$transaction(async (tx) => {
         const propetyNumber = await tx.property.findFirst({
           where: { district: district.toUpperCase() },
@@ -490,6 +490,46 @@ export const togglePropertyStatus = async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       message: "Internal server error",
+      error: "Error: " + error,
+    });
+  }
+};
+
+//update many properties at once based on the array of property ids and the update data sent in the request body, this can be used for example to mark multiple properties as unavailable when they are rented out at once or to update the monthly rent of multiple properties at once etc
+export const bulkUpdateProperties = async (req: Request, res: Response) => {
+  const { propertyIds, updateData } = req.body;
+
+  if (!propertyIds || !Array.isArray(propertyIds) || propertyIds.length === 0) {
+    res.status(400).json({
+      success: false,
+      message: "Property IDs are required and should be a non-empty array",
+    });
+    return;
+  }
+
+  if (!updateData || typeof updateData !== "object") {
+    res.status(400).json({
+      success: false,
+      message: "Update data is required and should be an object",
+    });
+    return;
+  }
+
+  try {
+    const updatedProperties = await prisma.property.updateMany({
+      where: { id: { in: propertyIds } },
+      data: updateData,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `${updatedProperties.count} properties updated successfully`,
+    });
+  } catch (error) {
+    console.error("Error updating properties:", error);
+    res.status(500).json({
+      success: false,
+      message: "something went wrong while updating the properties",
       error: "Error: " + error,
     });
   }

@@ -1,6 +1,7 @@
 import type { Router } from "express";
 import express from "express";
 import {
+  bulkUpdateProperties,
   createProperty,
   deleteProperty,
   getAllProperties,
@@ -18,6 +19,6 @@ AdminRoute.post("/create-user", createUser)
   .get("/property/:id", getPropertyById)
   .delete("/delete-property/:propertyId", deleteProperty) //for deleting a property by id
   .patch("/update-property/:propertyId", updateProperty) //for updating a property by id
-  .post("/toggle-property-status/:propertyId", togglePropertyStatus); //for toggling the status of a property
-
+  .post("/toggle-property-status/:propertyId", togglePropertyStatus) //for toggling the status of a property
+  .patch("/update-many-properties", bulkUpdateProperties);
 export default AdminRoute;

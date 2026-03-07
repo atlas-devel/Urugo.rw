@@ -17,7 +17,7 @@ app.use(
         ? process.env.PRODUCTION_URL
         : process.env.DEVELOPMENT_URL,
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
@@ -28,7 +28,7 @@ app.use(express.json());
 
 app.use("/public/auth", PublicRoute);
 app.use("/admin", userInfo, ProtectedRoute, AdminRoute);
-app.use("/public",PublicPropertyRoute);
+app.use("/public", PublicPropertyRoute);
 
 // 404 not found route
 app.use((req: Request, res: Response) => {
