@@ -6,7 +6,7 @@ import {
   getAllProperties,
   getPropertyById,
   updateProperty,
-} from "../controllers/admin/property.controller";
+} from "../controllers/admin/property_management.controller";
 import { createUser } from "../controllers/admin/user.controller";
 
 const AdminRoute: Router = express.Router();

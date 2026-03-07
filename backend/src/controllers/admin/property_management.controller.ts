@@ -302,9 +302,32 @@ export const getAllProperties = async (req: Request, res: Response) => {
   const limit = 15;
   const skip = (page - 1) * limit;
 
+  //dynamic filter from query params
+  const where: Record<string, unknown> = {};
+
+  if (req.query.district)
+    where.district = (req.query.district as string).toUpperCase();
+  if (req.query.city) where.city = req.query.city;
+  if (req.query.province)
+    where.province = (req.query.province as string).toUpperCase();
+  if (req.query.sector) where.sector = (req.query.sector as string).toUpperCase();
+  if (req.query.property_type) where.property_type = (req.query.property_type as string).toUpperCase();
+  if (req.query.status) where.status = (req.query.status as string).toUpperCase();
+  if (req.query.isActive) where.isActive = req.query.isActive === "true";
+  if (req.query.bedrooms) where.bedrooms = Number(req.query.bedrooms);
+  if (req.query.bathrooms) where.bathrooms = Number(req.query.bathrooms);
+
+  if (req.query.minRent || req.query.maxRent) {
+    where.monthlyRent = {
+      ...(req.query.minRent && { gte: Number(req.query.minRent) }),
+      ...(req.query.maxRent && { lte: Number(req.query.maxRent) }),
+    };
+  }
+
   try {
     const [properties, totalProperties] = await Promise.all([
-      await prisma.property.findMany({
+      prisma.property.findMany({
+        where,
         skip,
         take: limit,
         orderBy: { createdAt: "desc" },
@@ -321,7 +344,7 @@ export const getAllProperties = async (req: Request, res: Response) => {
           approvedBy: true,
         },
       }),
-      await prisma.property.count(),
+      prisma.property.count({ where }),
     ]);
     const totalPages = Math.ceil(totalProperties / limit);
 
@@ -358,6 +381,8 @@ export const getAllProperties = async (req: Request, res: Response) => {
   }
 };
 
+//plan to get the payment history and lease details of the property  based in current id from params
+//also plan to get the tenant details who is currently renting the property based on the current active lease contract of the property
 export const getPropertyById = async (req: Request, res: Response) => {
   const id = req.params.id as string;
 
