@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
-import prisma from "../utils/prisma";
+import prisma from "../../utils/prisma";
 
-export const getAllProperties = async (req: Request, res: Response) => {
+export const getAvailableProperties = async (req: Request, res: Response) => {
   const page = Number(req.query.page) || 1;
   const limit = 15;
   const skip = (page - 1) * limit;
@@ -10,9 +10,7 @@ export const getAllProperties = async (req: Request, res: Response) => {
     const [properties, totalProperties] = await Promise.all([
       prisma.property.findMany({
         where: {
-          status: {
-            not: "PENDING_APPROVAL",
-          },
+          status: "AVAILABLE",
         },
         skip,
         take: limit,
@@ -29,9 +27,7 @@ export const getAllProperties = async (req: Request, res: Response) => {
       }),
       prisma.property.count({
         where: {
-          status: {
-            not: "PENDING_APPROVAL",
-          },
+          status: "AVAILABLE",
         },
       }),
     ]);
@@ -70,7 +66,10 @@ export const getAllProperties = async (req: Request, res: Response) => {
   }
 };
 
-export const getPropertyById = async (req: Request, res: Response) => {
+export const getAvailablePropertyDetailById = async (
+  req: Request,
+  res: Response,
+) => {
   const id = req.params.id as string;
 
   try {
@@ -108,6 +107,12 @@ export const getPropertyById = async (req: Request, res: Response) => {
     });
 
     if (!property) {
+      return res.status(404).json({
+        success: false,
+        message: "Property not found",
+      });
+    }
+    if (property.status !== "AVAILABLE") {
       return res.status(404).json({
         success: false,
         message: "Property not found",

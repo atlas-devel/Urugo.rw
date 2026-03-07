@@ -1,12 +1,12 @@
 import type { Request, Response } from "express";
-import { generateTempToken, generateTokens } from "../utils/jwt";
-import prisma from "../utils/prisma";
-import env from "../utils/env";
+import { generateTempToken, generateTokens } from "../../utils/jwt";
+import prisma from "../../utils/prisma";
+import env from "../../utils/env";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
-import { generateOTP } from "../utils/otp_generator";
-import type { LoginCredentials } from "../@types/types";
-import { sendEmail } from "../utils/nodemailer";
+import { generateOTP } from "../../utils/otp_generator";
+import type { LoginCredentials } from "../../@types/types";
+import { sendEmail } from "../../utils/nodemailer";
 import jwt from "jsonwebtoken";
 
 const setCookies = (

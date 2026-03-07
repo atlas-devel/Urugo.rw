@@ -1,145 +1,10 @@
-import bcrypt from "bcrypt";
 import type { Request, Response } from "express";
-import prisma from "../utils/prisma";
-import { generatePropertyId } from "../utils/propertyId";
-import { District } from "../generated/prisma/enums";
-
-export const createUser = async (req: Request, res: Response) => {
-  const {
-    name,
-    email,
-    phoneNumber,
-    nationalId,
-    password,
-    role,
-    issueCountry,
-    address,
-  } = req.body;
-
-  if (!name || !nationalId || !password || !role || !address || !issueCountry) {
-    res
-      .status(400)
-      .json({ success: false, message: "All fields are required" });
-    return;
-  }
-  if (!email && !phoneNumber) {
-    res
-      .status(400)
-      .json({ success: false, message: "Email or phone number is required" });
-    return;
-  }
-  if (issueCountry.toLowerCase() === "rwanda" && !/^\d{16}$/.test(nationalId)) {
-    res.status(400).json({
-      success: false,
-      message: "Invalid National ID format for Rwanda",
-    });
-    return;
-  }
-
-  if (
-    !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
-      password,
-    )
-  ) {
-    res.status(400).json({
-      success: false,
-      message:
-        "Password must be at least 8 characters long and include uppercase letters, lowercase letters, numbers, and special characters",
-    });
-    return;
-  }
-
-  const existingUser: {
-    nationalId: string;
-    banned: boolean | null;
-    banReason: string | null;
-    banExpires: Date | null;
-    email: string | null;
-    phoneNumber: string | null;
-  } | null = await prisma.user.findFirst({
-    where: { OR: [{ email }, { nationalId }, { phoneNumber }] },
-    select: {
-      nationalId: true,
-      banned: true,
-      banReason: true,
-      banExpires: true,
-      email: true,
-      phoneNumber: true,
-    },
-  });
-
-  if (existingUser) {
-    // banned user
-    if (existingUser.banned && new Date() < (existingUser.banExpires ?? 0)) {
-      res.status(403).json({
-        success: false,
-        message: `User is banned until ${existingUser.banExpires}. Reason: ${existingUser.banReason}`,
-      });
-      return;
-    }
-    // validate duplicate phone number
-    if (existingUser.phoneNumber === phoneNumber) {
-      res.status(400).json({
-        success: false,
-        message: "Phone number is already associated with another account",
-      });
-      return;
-    }
-    //validate duplicate email
-    if (existingUser.email === email) {
-      res.status(400).json({
-        success: false,
-        message: "Email is already associated with another account",
-      });
-      return;
-    }
-    // validate duplicate national ID
-    if (existingUser.nationalId === nationalId) {
-      res.status(400).json({
-        success: false,
-        message: "User with this national ID already exists",
-      });
-      return;
-    }
-  }
-
-  const validateEmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$/.test(
-    email,
-  );
-  if (email && !validateEmail) {
-    res.status(400).json({ success: false, message: "Invalid email format" });
-    return;
-  }
-
-  try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    await prisma.user.create({
-      data: {
-        name,
-        email,
-        phoneNumber,
-        nationalId,
-        password: hashedPassword,
-        role,
-        issueCountry,
-        address,
-      },
-    });
-    res
-      .status(201)
-      .json({ success: true, message: "User created successfully" });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: "Error: " + error,
-    });
-    return;
-  }
-};
+import prisma from "../../utils/prisma";
+import { generatePropertyId } from "../../utils/propertyId";
+import { District } from "../../generated/prisma/enums";
 
 export const createProperty = async (req: Request, res: Response) => {
-  let { landlordId } = req.params;
+  const { landlordId } = req.params;
   const {
     address,
     city,
@@ -323,24 +188,45 @@ export const updateProperty = async (req: Request, res: Response) => {
     return;
   }
 
+  let updatedDistrictNumber: string | undefined;
   try {
     const existingProperty = await prisma.property.findUnique({
       where: { id: propertyId },
-      select: { id: true },
+      select: { id: true, district: true },
     });
 
     if (!existingProperty) {
       res.status(404).json({ success: false, message: "Property not found" });
       return;
     }
+    if (district !== existingProperty.district) {
+      const latestPropertyNumber = await prisma.$transaction(async (tx) => {
+        const propetyNumber = await tx.property.findFirst({
+          where: { district: district.toUpperCase() },
+          orderBy: { createdAt: "desc" },
+          select: { propety_number: true },
+        });
+        return propetyNumber?.propety_number;
+      });
+
+      if (!latestPropertyNumber) {
+        updatedDistrictNumber = generatePropertyId(district, null);
+      } else {
+        updatedDistrictNumber = generatePropertyId(
+          district,
+          latestPropertyNumber,
+        );
+      }
+    }
     const updatedProperty = await prisma.property.update({
       where: { id: propertyId },
       data: {
-        address: address?.toUpperCase(),
-        city,
-        province,
-        district,
-        sector,
+        address,
+        propety_number: district ? updatedDistrictNumber : undefined,
+        city, //inforce forntend to send city in capital letters to avoid confusion and maintain consistency in the database
+        province, // inforce frontend to send province in capital letters to avoid confusion and maintain consistency in the database
+        district: district?.toUpperCase() as District,
+        sector, //inforce frontend to send sector in capital letters to avoid confusion and maintain consistency in the database
         bedrooms,
         bathrooms,
         hasParking,
@@ -368,8 +254,7 @@ export const updateProperty = async (req: Request, res: Response) => {
     console.error("Error updating property:", error); //debug log
     res.status(500).json({
       success: false,
-      message: "Internal server error",
-      error: "Error: " + error,
+      message: "Something went wrong while updating the property",
     });
   }
 };
@@ -504,7 +389,7 @@ export const getPropertyById = async (req: Request, res: Response) => {
         approvedBy: true, //not in public
         createdAt: true, //not in public
         contractUrl: true, //not in public
-        approvedAt:true,//not in public
+        approvedAt: true, //not in public
 
         landlord: {
           select: {
@@ -537,7 +422,3 @@ export const getPropertyById = async (req: Request, res: Response) => {
     });
   }
 };
-
-export const banUser = async (req: Request, res: Response) => {};
-
-//TODO: make unban user

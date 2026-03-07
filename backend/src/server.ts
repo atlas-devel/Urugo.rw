@@ -3,7 +3,7 @@ import type { Express, Request, Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import "dotenv/config";
-import publicRoute from "./routes/public.routes";
+import { PublicPropertyRoute, PublicRoute } from "./routes/public.routes";
 import AdminRoute from "./routes/admin.routes";
 import { userInfo } from "./middleware/public.middleware";
 import { ProtectedRoute } from "./middleware/admin.middleware";
@@ -26,8 +26,9 @@ app.use(express.json());
 
 // middleware
 
-app.use("/public/auth", publicRoute);
+app.use("/public/auth", PublicRoute);
 app.use("/admin", userInfo, ProtectedRoute, AdminRoute);
+app.use("/public",PublicPropertyRoute);
 
 // 404 not found route
 app.use((req: Request, res: Response) => {
