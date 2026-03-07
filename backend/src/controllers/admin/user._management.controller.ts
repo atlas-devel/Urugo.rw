@@ -102,7 +102,7 @@ export const createUser = async (req: Request, res: Response) => {
     }
     res.status(400).json({
       success: false,
-      message: "User with this email, phone number or national ID already exists",
+      message: "User with these credentials already exists",
     });
     return;
   }
@@ -119,7 +119,7 @@ export const createUser = async (req: Request, res: Response) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await prisma.user.create({
       data: {
-        name,
+        name:name.trim(),
         email,
         phoneNumber,
         nationalId,
