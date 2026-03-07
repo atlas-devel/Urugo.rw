@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import type { Request, Response } from "express";
-import prisma from "../utils/prisma";
+import prisma from "../../utils/prisma";
 
 export const createUser = async (req: Request, res: Response) => {
   const {
@@ -99,7 +99,6 @@ export const createUser = async (req: Request, res: Response) => {
       });
       return;
     }
-     
   }
 
   const validateEmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$/.test(
@@ -112,7 +111,7 @@ export const createUser = async (req: Request, res: Response) => {
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    await prisma.user.create({
+    const newUser = await prisma.user.create({
       data: {
         name,
         email,
@@ -124,9 +123,13 @@ export const createUser = async (req: Request, res: Response) => {
         address,
       },
     });
-    res
-      .status(201)
-      .json({ success: true, message: "User created successfully" });
+    res.status(201).json({
+      success: true,
+      message: "User created successfully",
+      data: {
+        userId: newUser.id, //for knowing the real landlord to create properties for
+      },
+    });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -137,4 +140,9 @@ export const createUser = async (req: Request, res: Response) => {
   }
 };
 
-//TODO: make unban user
+export const banUser = async (req: Request, res: Response) => {};
+export const unbanUser = async (req: Request, res: Response) => {};
+export const getAllUsers = async (req: Request, res: Response) => {};
+export const getUserById = async (req: Request, res: Response) => {};
+export const updateUser = async (req: Request, res: Response) => {};
+export const deleteUser = async (req: Request, res: Response) => {};
