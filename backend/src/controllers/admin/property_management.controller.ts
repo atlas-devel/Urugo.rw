@@ -310,9 +310,12 @@ export const getAllProperties = async (req: Request, res: Response) => {
   if (req.query.city) where.city = req.query.city;
   if (req.query.province)
     where.province = (req.query.province as string).toUpperCase();
-  if (req.query.sector) where.sector = (req.query.sector as string).toUpperCase();
-  if (req.query.property_type) where.property_type = (req.query.property_type as string).toUpperCase();
-  if (req.query.status) where.status = (req.query.status as string).toUpperCase();
+  if (req.query.sector)
+    where.sector = (req.query.sector as string).toUpperCase();
+  if (req.query.property_type)
+    where.property_type = (req.query.property_type as string).toUpperCase();
+  if (req.query.status)
+    where.status = (req.query.status as string).toUpperCase();
   if (req.query.isActive) where.isActive = req.query.isActive === "true";
   if (req.query.bedrooms) where.bedrooms = Number(req.query.bedrooms);
   if (req.query.bathrooms) where.bathrooms = Number(req.query.bathrooms);
@@ -440,6 +443,50 @@ export const getPropertyById = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Error fetching property:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: "Error: " + error,
+    });
+  }
+};
+
+export const togglePropertyStatus = async (req: Request, res: Response) => {
+  const propertyId = req.params.propertyId as string;
+  if (!propertyId) {
+    res
+      .status(400)
+      .json({ success: false, message: "Property ID is required" });
+    return;
+  }
+
+  try {
+    const existingProperty = await prisma.property.findUnique({
+      where: {
+        id: propertyId,
+      },
+      select: { id: true, isActive: true },
+    });
+
+    if (!existingProperty) {
+      res.status(404).json({ success: false, message: "Property not found" });
+      return;
+    }
+
+    const updatedProperty = await prisma.property.update({
+      where: { id: propertyId },
+      data: {
+        isActive: !existingProperty.isActive,
+      },
+    });
+    res.status(200).json({
+      success: true,
+      message: `Property status updated to ${
+        updatedProperty.isActive ? "active" : "inactive"
+      } successfully`,
+    });
+  } catch (error) {
+    console.error("Error updating property status:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",

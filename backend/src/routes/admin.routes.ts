@@ -5,6 +5,7 @@ import {
   deleteProperty,
   getAllProperties,
   getPropertyById,
+  togglePropertyStatus,
   updateProperty,
 } from "../controllers/admin/property_management.controller";
 import { createUser } from "../controllers/admin/user.controller";
@@ -16,6 +17,7 @@ AdminRoute.post("/create-user", createUser)
   .get("/properties", getAllProperties)
   .get("/property/:id", getPropertyById)
   .delete("/delete-property/:propertyId", deleteProperty) //for deleting a property by id
-  .patch("/update-property/:propertyId", updateProperty); //for updating a property by id
+  .patch("/update-property/:propertyId", updateProperty) //for updating a property by id
+  .post("/toggle-property-status/:propertyId", togglePropertyStatus); //for toggling the status of a property
 
 export default AdminRoute;
