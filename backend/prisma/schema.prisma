@@ -32,7 +32,14 @@ model User {
   nationalId   String @unique @default("")
   issueCountry String @default("")
 
-  address String @default("")
+  //address info
+  country  String   @default("Rwanda")
+  city     String   @default("Kigali city")
+  province String   @default("")
+  district District @default(NYARUGENGE)
+  sector   String   @default("")
+  cell     String   @default("")
+  address  String   @default("")
 
   otp           String?
   otp_expiry    DateTime?
