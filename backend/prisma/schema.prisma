@@ -14,21 +14,38 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String  @id @default(cuid())
   name          String
-  email         String
-  emailVerified Boolean   @default(false)
+  email         String 
+  emailVerified Boolean @default(false)
   image         String?
   password      String
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  role          Role      @default(GUEST)
-  banned        Boolean?  @default(false)
-  banReason     String?
-  banExpires    DateTime?
-  // username removed
-  phoneNumber   String
 
+  //account lifecycle
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  lastLogin DateTime?
+
+  // account status
+  isActive  Boolean   @default(true)
+  deactivatedAt DateTime?
+  deactivatedBy String? // Admin Name who deactivated the account
+  deactivationReason String?
+  deactivateOtp String?
+  deactivateOtpExpiry DateTime?
+  
+
+
+  role Role @default(GUEST)
+
+  // account status
+  banned      Boolean?  @default(false)
+  banReason   String?
+  banExpires  DateTime?
+  // username removed
+  phoneNumber String
+
+  // identity info
   nationalId   String @unique @default("")
   issueCountry String @default("")
 
@@ -89,7 +106,7 @@ model RefreshToken {
 enum Role {
   ADMIN
   LANDLORD
-  RENT
+  RENTER
   AGENT
   GUEST
 }

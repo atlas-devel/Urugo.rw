@@ -73,16 +73,27 @@ export const login = async (
     }
     const { accessToken, refreshToken } = generateTokens({ id: user.id });
 
-    const saveToken = await prisma.refreshToken.create({
-      data: {
-        hashedToken: crypto
-          .createHash("sha256")
-          .update(refreshToken)
-          .digest("hex"),
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        userId: user.id,
-      },
-    });
+    //saving refresh token in db, and updating last login time
+    await Promise.all([
+     prisma.refreshToken.create({
+        data: {
+          hashedToken: crypto
+            .createHash("sha256")
+            .update(refreshToken)
+            .digest("hex"),
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          userId: user.id,
+        },
+      }),
+      prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          lastLogin:new Date()
+        }
+      }),
+    ]);
 
     setCookies(res, refreshToken, accessToken);
 

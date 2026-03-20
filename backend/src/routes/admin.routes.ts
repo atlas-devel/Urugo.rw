@@ -9,7 +9,10 @@ import {
   togglePropertyStatus,
   updateProperty,
 } from "../controllers/admin/property_management.controller";
-import { createUser } from "../controllers/admin/user._management.controller";
+import {
+  createUser,
+  getUserStatistics,
+} from "../controllers/admin/user_management.controller";
 
 const AdminRoute: Router = express.Router();
 
@@ -20,5 +23,6 @@ AdminRoute.post("/create-user", createUser)
   .delete("/delete-property/:propertyId", deleteProperty) //for deleting a property by id
   .patch("/update-property/:propertyId", updateProperty) //for updating a property by id
   .post("/toggle-property-status/:propertyId", togglePropertyStatus) //for toggling the status of a property
-  .patch("/update-many-properties", bulkUpdateProperties);
+  .patch("/update-many-properties", bulkUpdateProperties)
+  .get("/stats", getUserStatistics);
 export default AdminRoute;

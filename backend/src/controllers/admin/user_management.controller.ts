@@ -1,7 +1,8 @@
-import { User } from "./../../generated/prisma/browser";
+import { User } from "../../generated/prisma/browser";
 import bcrypt from "bcrypt";
 import type { Request, Response } from "express";
 import prisma from "../../utils/prisma";
+import { generateOTP } from "../../utils/otp_generator";
 
 export const createUser = async (req: Request, res: Response) => {
   const {
@@ -119,7 +120,7 @@ export const createUser = async (req: Request, res: Response) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await prisma.user.create({
       data: {
-        name:name.trim(),
+        name: name.trim(),
         email,
         phoneNumber,
         nationalId,
@@ -133,7 +134,7 @@ export const createUser = async (req: Request, res: Response) => {
       success: true,
       message: "User created successfully",
       data: {
-        userId: newUser.id, //for knowing the real landlord to create properties for
+        userId: newUser.id, //for ktodaying the real landlord to create properties for
       },
     });
   } catch (error) {
@@ -195,12 +196,11 @@ export const getAllUsers = async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       message: "Internal server error",
-      error: "Error: " + error,
     });
   }
 };
 export const getUserDetailsById = async (req: Request, res: Response) => {
-  const userId = req.params.userId as string;
+  const userId = req.params.userId as string; // from url params
   if (!userId) {
     res.status(400).json({ success: false, message: "User ID is required" });
     return;
@@ -462,3 +462,196 @@ export const deleteUser = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const getUserStatistics = async (req: Request, res: Response) => {
+  try {
+    const now = new Date();
+
+    // Date calculations
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const startOfMonth = new Date(now);
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const startOfLastMonth = new Date(now);
+    startOfLastMonth.setMonth(now.getMonth() - 1);
+    startOfLastMonth.setDate(1);
+    startOfLastMonth.setHours(0, 0, 0, 0);
+
+    const endOfLastMonth = new Date(now);
+    endOfLastMonth.setDate(0);
+    endOfLastMonth.setHours(23, 59, 59, 999);
+
+    const thirtyDaysAgo = new Date(now);
+    thirtyDaysAgo.setDate(now.getDate() - 30);
+
+    // Execute all queries in parallel
+    const [
+      totalUsers,
+      activeUsers,
+      newUsersThisMonth,
+      newUsersThisWeek,
+      bannedUsers,
+      usersByRole,
+      lastMonthUsers,
+      thisMonthUsers,
+    ] = await Promise.all([
+      prisma.user.count(),
+
+      // Active users - logged in last 30 days, not banned
+      prisma.user.count({
+        where: {
+          lastLogin: { gte: thirtyDaysAgo }, // Check your field name
+          banned: false,
+        },
+      }),
+
+      prisma.user.count({
+        where: { createdAt: { gte: startOfMonth } },
+      }),
+
+      prisma.user.count({
+        where: { createdAt: { gte: startOfWeek } },
+      }),
+
+      prisma.user.count({
+        where: { banned: true },
+      }),
+
+      prisma.user.groupBy({
+        by: ["role"],
+        _count: { role: true },
+      }),
+
+      prisma.user.count({
+        where: {
+          createdAt: {
+            gte: startOfLastMonth,
+            lte: endOfLastMonth,
+          },
+        },
+      }),
+
+      prisma.user.count({
+        where: { createdAt: { gte: startOfMonth } },
+      }),
+    ]);
+
+    // Calculate growth percentage (fixed)
+    let growthPercentage: number;
+    if (lastMonthUsers === 0) {
+      growthPercentage = thisMonthUsers > 0 ? 100 : 0;
+    } else {
+      growthPercentage =
+        ((thisMonthUsers - lastMonthUsers) / lastMonthUsers) * 100;
+    }
+
+    // Get registration trend for last 7 days
+    const registrationTrend = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(now.getDate() - i);
+      date.setHours(0, 0, 0, 0);
+
+      const nextDate = new Date(date);
+      nextDate.setDate(date.getDate() + 1);
+
+      const count = await prisma.user.count({
+        where: {
+          createdAt: {
+            gte: date,
+            lt: nextDate,
+          },
+        },
+      });
+
+      registrationTrend.push({
+        date: date.toISOString().split("T")[0],
+        count,
+      });
+    }
+
+    // Format role breakdown
+    const byRole: Record<string, number> = {};
+    usersByRole.forEach((item) => {
+      byRole[item.role] = item._count.role;
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalUsers,
+        activeUsers,
+        newUsersThisMonth,
+        newUsersThisWeek,
+        bannedUsers,
+        byRole,
+        userGrowth: Number(growthPercentage.toFixed(2)),
+        registrationTrend,
+      },
+    });
+  } catch (error) {
+    console.error("Error getting user stats:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+// export const deactivateUser = async (req: Request, res: Response) => {
+//   const userId = req.params.userId as string;
+//   const { reason } = req.body as { reason: string };
+//   if (!userId) {
+//     res.status(400).json({ success: false, message: "User ID is required" });
+//     return;
+//   }
+
+//   try {
+//     const existingUser = await prisma.user.findUnique({
+//       where: { id: userId },
+//     });
+//     if (!existingUser) {
+//       res.status(404).json({ success: false, message: "User not found" });
+//       return;
+//     }
+
+//     if (!existingUser.isActive) {
+//       res.status(400).json({
+//         success: false,
+//         message: "User was already Deactivated",
+//       });
+//       return;
+//     }
+//     if (existingUser.role === "ADMIN") {
+//       res.status(400).json({
+//         success: false,
+//         message: "High Priviledge user can't be deleted",
+//       });
+//       return;
+//     }
+
+//     await prisma.user.update({
+//       where: { id: userId },
+//       data: {
+//         deactivatedAt: new Date(),
+//         deactivatedBy: `ADMIN: ${req.userInfo?.name}`,
+//         deactivationReason: reason || "No reason provided",
+//       },
+//     });
+
+//     res.status(200).json({
+//       success: true,
+//       message: "User deactivated successfully",
+//     });
+//   } catch (error) {
+//     console.log("Error at Deactivang user: " + error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Deactivating user failed",
+//     });
+//   }
+// };

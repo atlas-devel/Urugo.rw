@@ -6,7 +6,7 @@ import {
   resetPassword,
   sendResetPasswordOTP,
   verifyOTP,
-} from "../controllers/public/public.auth.controller";
+} from "../controllers/auth/public.auth.controller";
 import {
   getAvailableProperties,
   getAvailablePropertyDetailById,
