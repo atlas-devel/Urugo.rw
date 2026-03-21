@@ -16,7 +16,7 @@ datasource db {
 model User {
   id            String  @id @default(cuid())
   name          String
-  email         String 
+  email         String
   emailVerified Boolean @default(false)
   image         String?
   password      String
@@ -27,14 +27,12 @@ model User {
   lastLogin DateTime?
 
   // account status
-  isActive  Boolean   @default(true)
-  deactivatedAt DateTime?
-  deactivatedBy String? // Admin Name who deactivated the account
-  deactivationReason String?
-  deactivateOtp String?
+  isActive            Boolean   @default(true)
+  deactivatedAt       DateTime?
+  deactivatedBy       String? // Admin Name who deactivated the account
+  deactivationReason  String?
+  deactivateOtp       String?
   deactivateOtpExpiry DateTime?
-  
-
 
   role Role @default(GUEST)
 
@@ -116,7 +114,6 @@ enum PropertyStatus {
   AVAILABLE
   OCCUPIED
   MAINTENANCE
-  INACTIVE
   PENDING_APPROVAL
 }
 
@@ -131,6 +128,7 @@ enum PropertyType {
 enum LeaseStatus {
   PENDING
   ACTIVE
+  INACTIVE
   EXPIRED
   TERMINATED
   GRACE_PERIOD
@@ -167,6 +165,9 @@ enum NotificationType {
   PROPERTY_APPROVED
   RENTER_REGISTERED
   BLACKLIST_ALERT
+  SYSTEM_UPDATE
+  ACCOUNT_DEACTIVATED
+  ACCOUNT_BANNED
 }
 
 enum District {
@@ -482,8 +483,10 @@ model AdminLog {
   id String @id @default(cuid())
 
   // Admin & Action
-  adminId String
-  action  String // "APPROVE_PROPERTY", "BLACKLIST_VERIFY", etc.
+  adminId    String? 
+  adminName  String? // Store admin name for easier reference
+  adminEmail String? // Store admin email for easier reference
+  action     String // "APPROVE_PROPERTY", "BLACKLIST_VERIFY", etc.
 
   // Target
   targetType String // "Property", "User", "Lease", "Payment"
