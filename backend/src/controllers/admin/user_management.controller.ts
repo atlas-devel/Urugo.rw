@@ -1,4 +1,8 @@
-import { User } from "../../generated/prisma/browser";
+import {
+  District,
+  NotificationType,
+  User,
+} from "../../generated/prisma/browser";
 import bcrypt from "bcrypt";
 import type { Request, Response } from "express";
 import prisma from "../../utils/prisma";
@@ -15,10 +19,31 @@ export const createUser = async (req: Request, res: Response) => {
     password,
     role,
     issueCountry,
+
+    //address info
     address,
+    country,
+    city,
+    province,
+    district,
+    sector,
+    cell,
   } = req.body;
 
-  if (!name || !nationalId || !password || !role || !address || !issueCountry) {
+  if (
+    !name ||
+    !nationalId ||
+    !password ||
+    !role ||
+    !address ||
+    !issueCountry ||
+    !country ||
+    !city ||
+    !province ||
+    !district ||
+    !sector ||
+    !cell
+  ) {
     res
       .status(400)
       .json({ success: false, message: "All fields are required" });
@@ -51,14 +76,7 @@ export const createUser = async (req: Request, res: Response) => {
     return;
   }
 
-  const existingUser: {
-    nationalId: string;
-    banned: boolean | null;
-    banReason: string | null;
-    banExpires: Date | null;
-    email: string | null;
-    phoneNumber: string | null;
-  } | null = await prisma.user.findFirst({
+  const existingUser = await prisma.user.findFirst({
     where: { OR: [{ email }, { nationalId }, { phoneNumber }] },
     select: {
       nationalId: true,
@@ -103,6 +121,7 @@ export const createUser = async (req: Request, res: Response) => {
       });
       return;
     }
+
     res.status(400).json({
       success: false,
       message: "User with these credentials already exists",
@@ -130,13 +149,49 @@ export const createUser = async (req: Request, res: Response) => {
         role,
         issueCountry,
         address,
+        country,
+        city,
+        province,
+        district: district.trim().toUpperCase() as District, // ensure district is stored in uppercase for consistency
+        sector,
+        cell,
       },
     });
+
+    // make admin log for creating user with fire and forget method for better performance
+    // which allows us to run task in background without blocking the main thread and delaying the response to the client,
+    //  we can use this approach for tasks that are not critical to be completed before sending the response, such as logging, sending notifications, etc...
+    makeAdminLog({
+      adminName: req.userInfo?.name || "Unknown Admin",
+      adminEmail: req.userInfo?.email || "Unknown Admin Email",
+      action: `Created ${newUser.name} ${newUser.role} with ID ${newUser.id}`,
+      targetType: newUser.role,
+      targetId: newUser.id,
+    }).catch((error) => {
+      console.error("Error creating admin log:", error);
+      throw new Error("Error creating admin log at create user: " + error);
+    });
+
+    //send notification to the user about their account creation with fire and forget method for better performance
+    makeNotification(
+      {
+        type: "ACCOUNT_CREATED" as NotificationType,
+        receiverId: newUser.id,
+        senderId: req.userInfo?.email || "System",
+        title: "Account Created",
+        message: `Hello ${newUser.name}, your account has been created successfully. You can now start to use our services.`,
+      },
+      newUser.email,
+    ).catch((error) => {
+      console.error("Error creating notification:", error);
+      throw new Error("Error creating notification at create user: " + error);
+    });
+
     res.status(201).json({
       success: true,
       message: "User created successfully",
       data: {
-        userId: newUser.id, //for ktodaying the real landlord to create properties for
+        userId: newUser.id,
       },
     });
   } catch (error) {
@@ -151,8 +206,8 @@ export const createUser = async (req: Request, res: Response) => {
 
 export const getAllUsers = async (req: Request, res: Response) => {
   const page = parseInt(req.query.page as string) || 1;
-  const limit = 15;
-  const skip = (page - 1) * limit;
+  const take = 15;
+  const skip = (page - 1) * take;
 
   const where: Record<string, any> = {};
 
@@ -166,8 +221,8 @@ export const getAllUsers = async (req: Request, res: Response) => {
   try {
     const users = await prisma.user.findMany({
       where: where,
-      skip,
-      take: limit,
+      skip: skip,
+      take: take,
       select: {
         id: true, // for identifying the user to update, delete, ban, unban etc...
         name: true,
@@ -191,7 +246,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
       pagination: {
         total: totalUsers,
         page,
-        pages: Math.ceil(totalUsers / limit),
+        pages: Math.ceil(totalUsers / take),
       },
     });
   } catch (error) {
@@ -448,10 +503,92 @@ export const deleteUser = async (req: Request, res: Response) => {
     res.status(400).json({ success: false, message: "User ID is required" });
     return;
   }
+
   try {
-    await prisma.user.delete({
+    const existingUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        role: true,
+        properties: {
+          select: {
+            status: true,
+          },
+        },
+        renterLeases: {
+          select: {
+            status: true,
+          },
+        },
+      },
+    });
+    if (!existingUser) {
+      res.status(404).json({ success: false, message: "User not found" });
+      return;
+    }
+
+    if (existingUser.role === "ADMIN") {
+      res.status(400).json({
+        success: false,
+        message: "High Priviledge user can't be deleted",
+      });
+      return;
+    }
+
+    if (
+      existingUser.role === "LANDLORD" &&
+      (existingUser.properties.some((state) => state.status === "OCCUPIED") ||
+        existingUser.renterLeases.some((lease) => lease.status === "ACTIVE"))
+    ) {
+      res.status(400).json({
+        success: false,
+        message:
+          "Landlord with active properties or leases can't be deleted, consider deactivating the user instead",
+      });
+      return;
+    }
+
+    if (
+      existingUser.role === "RENTER" &&
+      existingUser.renterLeases.some((lease) => lease.status === "ACTIVE")
+    ) {
+      res.status(400).json({
+        success: false,
+        message:
+          "Renter with active leases can't be deleted, consider deactivating the user instead",
+      });
+      return;
+    }
+
+    const deletedUser = await prisma.user.delete({
       where: { id: userId },
     });
+
+    //make log
+    makeAdminLog({
+      adminName: req.userInfo?.name || "Unknown Admin",
+      adminEmail: req.userInfo?.email || "Unknown Admin Email",
+      action: `Deleted ${deletedUser.name} ${deletedUser.role} with ID ${deletedUser.id}`,
+      targetType: deletedUser.role,
+      targetId: deletedUser.id,
+    }).catch((error) => {
+      console.error("Error creating admin log:", error);
+    });
+
+    //send notification to the user about their account creation with fire and forget method for better performance
+    makeNotification(
+      {
+        type: "ACCOUNT_DELETED" as NotificationType,
+        receiverId: deletedUser.id,
+        senderId: req.userInfo?.email || "System",
+        title: "Account Deleted",
+        message: `Hello ${deletedUser.name}, your account has been deleted.`,
+      },
+      deletedUser.email,
+    ).catch((error) => {
+      console.error("Error creating notification:", error);
+    });
+
     res.status(200).json({
       success: true,
       message: "User deleted successfully",
@@ -665,7 +802,7 @@ export const deactivateUser = async (req: Request, res: Response) => {
           deactivatedBy: `ADMIN: ${req.userInfo?.name}`,
           deactivationReason: reason || "No reason provided",
           isActive: false,
-          banned:false
+          banned: false,
         },
       }),
       //set all properties owned by the user to INACTIVE so that they are not visible to renters and can't be leased until the admin decides to reactivate the user and their properties
