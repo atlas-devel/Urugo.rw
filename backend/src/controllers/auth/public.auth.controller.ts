@@ -6,7 +6,7 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { generateOTP } from "../../utils/otp_generator";
 import type { LoginCredentials } from "../../@types/types";
-import { sendEmail } from "../../utils/nodemailer";
+import { sendEmail } from "../../services/mail.service";
 import jwt from "jsonwebtoken";
 
 const setCookies = (
@@ -75,7 +75,7 @@ export const login = async (
 
     //saving refresh token in db, and updating last login time
     await Promise.all([
-     prisma.refreshToken.create({
+      prisma.refreshToken.create({
         data: {
           hashedToken: crypto
             .createHash("sha256")
@@ -90,8 +90,8 @@ export const login = async (
           id: user.id,
         },
         data: {
-          lastLogin:new Date()
-        }
+          lastLogin: new Date(),
+        },
       }),
     ]);
 
@@ -185,13 +185,15 @@ export const sendResetPasswordOTP = async (
     return;
   }
   try {
-    // const option = {
-    //   from: env.EMAIL_USER,
-    //   to: user.email,
-    //   purpose: "RESET_OTP",
-    //   otp,
-    // };
-    // await sendEmail(option);
+    const option = {
+      from: env.EMAIL_USER,
+      to: user.email,
+      purpose: "RESET_OTP",
+      otp,
+      subject: "Password Reset Request",
+      message: `You requested a password reset. Use the following OTP to reset your password: ${otp}. This OTP is valid for 10 minutes.`,
+    };
+    await sendEmail(option);
     const { tempToken } = generateTempToken({
       id: user.id,
       purpose: "RESET_OTP_TOKEN",

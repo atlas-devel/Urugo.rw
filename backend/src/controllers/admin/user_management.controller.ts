@@ -1,8 +1,14 @@
-import { User } from "../../generated/prisma/browser";
+import {
+  District,
+  NotificationType,
+  User,
+} from "../../generated/prisma/browser";
 import bcrypt from "bcrypt";
 import type { Request, Response } from "express";
 import prisma from "../../utils/prisma";
 import { generateOTP } from "../../utils/otp_generator";
+import makeAdminLog from "../../utils/makeAdminLog";
+import makeNotification from "../../utils/makeNotification";
 
 export const createUser = async (req: Request, res: Response) => {
   const {
@@ -13,10 +19,31 @@ export const createUser = async (req: Request, res: Response) => {
     password,
     role,
     issueCountry,
+
+    //address info
     address,
+    country,
+    city,
+    province,
+    district,
+    sector,
+    cell,
   } = req.body;
 
-  if (!name || !nationalId || !password || !role || !address || !issueCountry) {
+  if (
+    !name ||
+    !nationalId ||
+    !password ||
+    !role ||
+    !address ||
+    !issueCountry ||
+    !country ||
+    !city ||
+    !province ||
+    !district ||
+    !sector ||
+    !cell
+  ) {
     res
       .status(400)
       .json({ success: false, message: "All fields are required" });
@@ -49,14 +76,7 @@ export const createUser = async (req: Request, res: Response) => {
     return;
   }
 
-  const existingUser: {
-    nationalId: string;
-    banned: boolean | null;
-    banReason: string | null;
-    banExpires: Date | null;
-    email: string | null;
-    phoneNumber: string | null;
-  } | null = await prisma.user.findFirst({
+  const existingUser = await prisma.user.findFirst({
     where: { OR: [{ email }, { nationalId }, { phoneNumber }] },
     select: {
       nationalId: true,
@@ -101,6 +121,7 @@ export const createUser = async (req: Request, res: Response) => {
       });
       return;
     }
+
     res.status(400).json({
       success: false,
       message: "User with these credentials already exists",
@@ -128,13 +149,49 @@ export const createUser = async (req: Request, res: Response) => {
         role,
         issueCountry,
         address,
+        country,
+        city,
+        province,
+        district: district.trim().toUpperCase() as District, // ensure district is stored in uppercase for consistency
+        sector,
+        cell,
       },
     });
+
+    // make admin log for creating user with fire and forget method for better performance
+    // which allows us to run task in background without blocking the main thread and delaying the response to the client,
+    //  we can use this approach for tasks that are not critical to be completed before sending the response, such as logging, sending notifications, etc...
+    makeAdminLog({
+      adminName: req.userInfo?.name || "Unknown Admin",
+      adminEmail: req.userInfo?.email || "Unknown Admin Email",
+      action: `Created ${newUser.name} ${newUser.role} with ID ${newUser.id}`,
+      targetType: newUser.role,
+      targetId: newUser.id,
+    }).catch((error) => {
+      console.error("Error creating admin log:", error);
+      throw new Error("Error creating admin log at create user: " + error);
+    });
+
+    //send notification to the user about their account creation with fire and forget method for better performance
+    makeNotification(
+      {
+        type: "ACCOUNT_CREATED" as NotificationType,
+        receiverId: newUser.id,
+        senderId: req.userInfo?.email || "System",
+        title: "Account Created",
+        message: `Hello ${newUser.name}, your account has been created successfully. You can now start to use our services.`,
+      },
+      newUser.email,
+    ).catch((error) => {
+      console.error("Error creating notification:", error);
+      throw new Error("Error creating notification at create user: " + error);
+    });
+
     res.status(201).json({
       success: true,
       message: "User created successfully",
       data: {
-        userId: newUser.id, //for ktodaying the real landlord to create properties for
+        userId: newUser.id,
       },
     });
   } catch (error) {
@@ -149,8 +206,8 @@ export const createUser = async (req: Request, res: Response) => {
 
 export const getAllUsers = async (req: Request, res: Response) => {
   const page = parseInt(req.query.page as string) || 1;
-  const limit = 15;
-  const skip = (page - 1) * limit;
+  const take = 15;
+  const skip = (page - 1) * take;
 
   const where: Record<string, any> = {};
 
@@ -164,8 +221,8 @@ export const getAllUsers = async (req: Request, res: Response) => {
   try {
     const users = await prisma.user.findMany({
       where: where,
-      skip,
-      take: limit,
+      skip: skip,
+      take: take,
       select: {
         id: true, // for identifying the user to update, delete, ban, unban etc...
         name: true,
@@ -189,7 +246,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
       pagination: {
         total: totalUsers,
         page,
-        pages: Math.ceil(totalUsers / limit),
+        pages: Math.ceil(totalUsers / take),
       },
     });
   } catch (error) {
@@ -446,10 +503,92 @@ export const deleteUser = async (req: Request, res: Response) => {
     res.status(400).json({ success: false, message: "User ID is required" });
     return;
   }
+
   try {
-    await prisma.user.delete({
+    const existingUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        role: true,
+        properties: {
+          select: {
+            status: true,
+          },
+        },
+        renterLeases: {
+          select: {
+            status: true,
+          },
+        },
+      },
+    });
+    if (!existingUser) {
+      res.status(404).json({ success: false, message: "User not found" });
+      return;
+    }
+
+    if (existingUser.role === "ADMIN") {
+      res.status(400).json({
+        success: false,
+        message: "High Priviledge user can't be deleted",
+      });
+      return;
+    }
+
+    if (
+      existingUser.role === "LANDLORD" &&
+      (existingUser.properties.some((state) => state.status === "OCCUPIED") ||
+        existingUser.renterLeases.some((lease) => lease.status === "ACTIVE"))
+    ) {
+      res.status(400).json({
+        success: false,
+        message:
+          "Landlord with active properties or leases can't be deleted, consider deactivating the user instead",
+      });
+      return;
+    }
+
+    if (
+      existingUser.role === "RENTER" &&
+      existingUser.renterLeases.some((lease) => lease.status === "ACTIVE")
+    ) {
+      res.status(400).json({
+        success: false,
+        message:
+          "Renter with active leases can't be deleted, consider deactivating the user instead",
+      });
+      return;
+    }
+
+    const deletedUser = await prisma.user.delete({
       where: { id: userId },
     });
+
+    //make log
+    makeAdminLog({
+      adminName: req.userInfo?.name || "Unknown Admin",
+      adminEmail: req.userInfo?.email || "Unknown Admin Email",
+      action: `Deleted ${deletedUser.name} ${deletedUser.role} with ID ${deletedUser.id}`,
+      targetType: deletedUser.role,
+      targetId: deletedUser.id,
+    }).catch((error) => {
+      console.error("Error creating admin log:", error);
+    });
+
+    //send notification to the user about their account creation with fire and forget method for better performance
+    makeNotification(
+      {
+        type: "ACCOUNT_DELETED" as NotificationType,
+        receiverId: deletedUser.id,
+        senderId: req.userInfo?.email || "System",
+        title: "Account Deleted",
+        message: `Hello ${deletedUser.name}, your account has been deleted.`,
+      },
+      deletedUser.email,
+    ).catch((error) => {
+      console.error("Error creating notification:", error);
+    });
+
     res.status(200).json({
       success: true,
       message: "User deleted successfully",
@@ -489,6 +628,19 @@ export const getUserStatistics = async (req: Request, res: Response) => {
     thirtyDaysAgo.setDate(now.getDate() - 30);
 
     // Execute all queries in parallel
+    /* :TODO 
+    - total properties
+    -available properties
+    -avialable properties
+    -monthly reveneu
+    -active landlords
+    -active renters
+    -active agents
+    -move out requests
+    -blacklist reports
+    -
+      
+*/
     const [
       totalUsers,
       activeUsers,
@@ -602,56 +754,125 @@ export const getUserStatistics = async (req: Request, res: Response) => {
   }
 };
 
-// export const deactivateUser = async (req: Request, res: Response) => {
-//   const userId = req.params.userId as string;
-//   const { reason } = req.body as { reason: string };
-//   if (!userId) {
-//     res.status(400).json({ success: false, message: "User ID is required" });
-//     return;
-//   }
+export const deactivateUser = async (req: Request, res: Response) => {
+  const userId = req.params.userId as string;
+  const { reason } = req.body as { reason: string };
+  if (!userId) {
+    res.status(400).json({ success: false, message: "User ID is required" });
+    return;
+  }
 
-//   try {
-//     const existingUser = await prisma.user.findUnique({
-//       where: { id: userId },
-//     });
-//     if (!existingUser) {
-//       res.status(404).json({ success: false, message: "User not found" });
-//       return;
-//     }
+  try {
+    const existingUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        isActive: true,
+        role: true,
+        name: true,
+      },
+    });
+    if (!existingUser) {
+      res.status(404).json({ success: false, message: "User not found" });
+      return;
+    }
 
-//     if (!existingUser.isActive) {
-//       res.status(400).json({
-//         success: false,
-//         message: "User was already Deactivated",
-//       });
-//       return;
-//     }
-//     if (existingUser.role === "ADMIN") {
-//       res.status(400).json({
-//         success: false,
-//         message: "High Priviledge user can't be deleted",
-//       });
-//       return;
-//     }
+    if (!existingUser.isActive) {
+      res.status(400).json({
+        success: false,
+        message: "User was already Deactivated",
+      });
+      return;
+    }
+    if (existingUser.role === "ADMIN") {
+      res.status(400).json({
+        success: false,
+        message: "High Priviledge user can't be deleted",
+      });
+      return;
+    }
 
-//     await prisma.user.update({
-//       where: { id: userId },
-//       data: {
-//         deactivatedAt: new Date(),
-//         deactivatedBy: `ADMIN: ${req.userInfo?.name}`,
-//         deactivationReason: reason || "No reason provided",
-//       },
-//     });
+    const affectedUsers = await prisma.user.findMany({
+      where: {
+        renterLeases: {
+          some: {
+            landlordId: userId,
+            status: "ACTIVE",
+          },
+        },
+      },
+      select: {
+        id: true,
+        email: true,
+      },
+    });
 
-//     res.status(200).json({
-//       success: true,
-//       message: "User deactivated successfully",
-//     });
-//   } catch (error) {
-//     console.log("Error at Deactivang user: " + error);
-//     res.status(500).json({
-//       success: false,
-//       message: "Deactivating user failed",
-//     });
-//   }
-// };
+    await Promise.all([
+      //update user record to set deactivation fields
+      prisma.user.update({
+        where: { id: userId },
+        data: {
+          deactivatedAt: new Date(),
+          deactivatedBy: `ADMIN: ${req.userInfo?.name}`,
+          deactivationReason: reason || "No reason provided",
+          isActive: false,
+          banned: false,
+        },
+      }),
+      //set all properties owned by the user to INACTIVE so that they are not visible to renters and can't be leased until the admin decides to reactivate the user and their properties
+      prisma.property.updateMany({
+        where: { landlordId: userId },
+        data: {
+          isActive: false,
+        },
+      }),
+      //set all leases where the user is a landlord to INACTIVE so that they are not active until the admin decides to reactivate the user and their leases
+      prisma.lease.updateMany({
+        where: { landlordId: userId },
+        data: {
+          isActive: false,
+          status: "INACTIVE",
+        },
+      }),
+      //store admin log for deactivating user, we can create a log entry with the admin's name, email, action (deactivated user), details (reason for deactivation) and the target user ID
+      makeAdminLog({
+        adminName: req.userInfo?.name || "Unknown Admin",
+        adminEmail: req.userInfo?.email || "Unknown Admin Email",
+        action: `Deactivated ${existingUser?.name} ${existingUser.role} with ID ${userId}`,
+        details: `Reason: ${reason || "No reason provided"}`,
+        targetType: "USER",
+        targetId: userId,
+      }),
+    ]);
+
+    Promise.all([
+      //send notifications to affected users about the deactivation of the landlord and the reason for that, we can use the getAffectedUsers array to get the email addresses of the affected users and send them notifications via email or in-app notifications
+      affectedUsers.map((user) => {
+        makeNotification(
+          {
+            type: "ACCOUNT_DEACTIVATED",
+            senderId: req.userInfo?.email || "Unknown Admin Email",
+            receiverId: user.id,
+            title: "Account Deactivation Notice",
+            message: `Dear User, we regret to inform you that the landlord associated with your lease has been deactivated. This action was taken for the following reason: ${reason || "No reason provided"}. During this period, you may experience limited access to certain features related to this landlord. We apologize for any inconvenience caused and appreciate your understanding. If you have any questions or need further assistance, please contact our support team.`,
+          },
+          user.email!,
+        ).catch((error) => {
+          console.error(
+            `Error sending notification to user ${user.id} about landlord deactivation:`,
+            error,
+          );
+        });
+      }),
+    ]);
+    res.status(200).json({
+      success: true,
+      message: "User deactivated successfully",
+    });
+  } catch (error) {
+    console.log("Error at Deactivating user: " + error);
+    res.status(500).json({
+      success: false,
+      message: "Deactivating user failed",
+    });
+  }
+};
