@@ -628,6 +628,19 @@ export const getUserStatistics = async (req: Request, res: Response) => {
     thirtyDaysAgo.setDate(now.getDate() - 30);
 
     // Execute all queries in parallel
+    /* :TODO 
+    - total properties
+    -available properties
+    -avialable properties
+    -monthly reveneu
+    -active landlords
+    -active renters
+    -active agents
+    -move out requests
+    -blacklist reports
+    -
+      
+*/
     const [
       totalUsers,
       activeUsers,

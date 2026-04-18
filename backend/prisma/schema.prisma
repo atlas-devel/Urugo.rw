@@ -63,6 +63,9 @@ model User {
   // Add the opposite relation for Property.landlord
   properties Property[] @relation("UserToProperties")
 
+  // Add the opposite relation for Property.agent
+  registeredProperties Property[] @relation("AgentToProperties")
+
   // Add the opposite relation for Lease.renter
   renterLeases Lease[] @relation("RenterLeases")
 
@@ -111,10 +114,14 @@ enum Role {
 
 // enums
 enum PropertyStatus {
-  AVAILABLE
-  OCCUPIED
-  MAINTENANCE
-  PENDING_APPROVAL
+  DRAFT               // Agent is still collecting info/photos
+  PENDING_APPROVAL    // Agent finished, waiting for Admin review
+  REJECTED            // Admin sent it back to the agent to fix
+  AVAILABLE           // Live on the platform
+  RESERVED            // Renter is currently paying/signing
+  OCCUPIED            // Tenant is living there
+  MAINTENANCE         // Under renovation
+  OFF_MARKET          // Landlord decided to temporarily hide it
 }
 
 enum PropertyType {
@@ -210,6 +217,7 @@ model Property {
   // Primary Key
   id         String @id @default(cuid())
   landlordId String
+  agentId    String? // The agent or admin who registered the property
 
   // Basic Information
   propety_number String   @unique // Unique property identifier e.g. GS-0000001
@@ -252,7 +260,7 @@ model Property {
   //user will be able to download or view the lease agreement/contract 
 
   // Status & Admin Control
-  status     PropertyStatus @default(PENDING_APPROVAL)
+  status     PropertyStatus @default(DRAFT)
   isActive   Boolean        @default(true)
   approvedAt DateTime?
   approvedBy String? // Admin user ID
@@ -263,9 +271,11 @@ model Property {
 
   // Relations
   landlord User    @relation("UserToProperties", fields: [landlordId], references: [id], onDelete: Cascade)
+  agent    User?   @relation("AgentToProperties", fields: [agentId], references: [id])
   leases   Lease[]
 
   @@index([landlordId])
+  @@index([agentId])
   @@index([status])
   @@index([isActive])
   @@index([city, district])
