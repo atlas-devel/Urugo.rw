@@ -2,14 +2,14 @@
 
 Welcome to the Urugo.rw project repository! This is a full-stack real estate and property management platform.
 
-## 🏗️ Project Structure
+## Project Structure
 
 This is a monorepo setup containing both the client application and the server-side API:
 
 - **[`/frontend`](./frontend/)**: The front-end application, built with React and Vite. It contains specific views and routing for different user roles.
 - **[`/backend`](./backend/)**: The back-end service, built with Node.js and Prisma ORM for database management and API routes.
 
-## 👥 User Roles
+## User Roles
 
 The platform is designed to handle multiple distinct user roles, including:
 - **Admin**: For overall platform and user management.
@@ -18,7 +18,7 @@ The platform is designed to handle multiple distinct user roles, including:
 - **Renter**: For users looking to rent properties.
 - **Guest / Public**: For unauthenticated users browsing properties.
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 Make sure you have [Node.js](https://nodejs.org/) and [pnpm](https://pnpm.io/) installed on your machine.
