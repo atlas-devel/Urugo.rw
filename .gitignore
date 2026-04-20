@@ -36,3 +36,6 @@ Desktop.ini
 
 # TypeScript
 *.tsbuildinfo
+
+# documents
+workflow
