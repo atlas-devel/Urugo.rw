@@ -63,10 +63,12 @@ export interface ThemeProps {
 export interface RealEstateUser {
   id: string;
   name: string;
+  email: string;
+  phoneNumber: string;
   role: "admin" | "agent" | "landlord" | "renter" | "guest";
-  group: string;
-  status: "Active" | "Inactive" | "Pending";
-  createdAt: string;
+  banned: boolean;
+  isActive: boolean;
+  createdAt: Date;
 }
 
 export interface UserTablePaginationProps {
