@@ -1,9 +1,12 @@
+import AuthProvider from "./context/auth/AuthProvider";
 import AppRoutes from "./routes/Admin.routes";
 
 function App() {
   return (
     <div>
-    <AppRoutes/>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
     </div>
   );
 }

@@ -17,12 +17,19 @@ import NotFound from "../pages/admin/NotFound";
 import AddUser from "../pages/admin/management/UserRegistration";
 import LoginPage from "../pages/public/LoginPage";
 import RegisterPage from "../pages/public/RegisterPage";
+import ProtectedRoute from "./ProtectedRoute";
 
 function AppRoutes() {
   return (
     <Routes>
       {/* admin layout */}
-      <Route element={<AdminLayout />}>
+      <Route
+        element={
+          <ProtectedRoute>
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
         {/* Main */}
         <Route path={routes.DASHBOARD} element={<AdminDashboard />} />
         <Route path={routes.USERS} element={<AdminUsers />} />
