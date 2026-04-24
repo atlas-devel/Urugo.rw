@@ -33,6 +33,7 @@ export const login = async (
   res: Response<{ success: boolean; message: string; error?: unknown }>,
 ): Promise<void> => {
   const { email, password, phoneNumber } = req.body;
+  console.log(req.body);
 
   if ((!email && !phoneNumber) || !password) {
     res.status(404).json({ success: false, message: "Invalid Credentials" });
@@ -97,7 +98,7 @@ export const login = async (
 
     setCookies(res, refreshToken, accessToken);
 
-    res.json({ success: true, message: "Login successful" });
+    res.status(200).json({ success: true, message: "Login successful" });
   } catch (error) {
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
