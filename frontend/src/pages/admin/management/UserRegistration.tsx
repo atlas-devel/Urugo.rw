@@ -1,9 +1,10 @@
-import { Camera } from "lucide-react";
+import { ArrowLeft, Camera } from "lucide-react";
 import {
   districts,
   registrationRoles,
 } from "../../../data/registrationFormData";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 
 interface FormData {
   profile_image: FileList;
@@ -38,11 +39,21 @@ function UserRegistration() {
     console.log(data);
   };
 
+  const navigate = useNavigate();
+
   return (
     <div className="w-full p-4 md:p-6 lg:py-2 lg:p-8 bg-background dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm shadow-secondary-color/10">
-      <h1 className="py-8  font-semibold text-xl text-gray-900 dark:text-gray-300">
-        Add New User
-      </h1>
+      <div className="flex items-center justify-between">
+        <h1 className="py-8  font-semibold text-xl text-gray-900 dark:text-gray-300">
+          Add New User
+        </h1>
+        <button
+          onClick={() => navigate(-1)}
+          className="p-2 rounded-lg text-xl text-gray-900 dark:text-gray-300 dark:hover:text-white hover:bg-gray-200 duration-300 bg-gray-100 dark:bg-gray-800/20 dark:backdrop-blur-3xl border-gray-100 shadow-sm border dark:border-gray-100/20 cursor-pointer"
+        >
+          <ArrowLeft />
+        </button>
+      </div>
       <form onSubmit={handleSubmit(submitFormData)}>
         <div>
           <h1 className="text-gray-900 dark:text-gray-300 text-sm font-mono font-semibold tracking-wider md:border-b-2 md:border-gray-100 dark:border-gray-700/20 pb-2 mb-2 md:mb-6">
