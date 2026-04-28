@@ -8,7 +8,7 @@ export const rwandaUsersData: RealEstateUser[] = [
     phoneNumber: "+250780000001",
     role: "admin",
     banned: false,
-    isActive: true,
+    isActive: false,
     createdAt: new Date("2023-01-10T10:00:00Z"),
   },
   {
@@ -303,30 +303,26 @@ export const rwandaUsersData: RealEstateUser[] = [
   },
 ];
 
-export const UserRoles: { id: number; role: string }[] = [
-  { id: 0, role: "All Roles" },
-  { id: 1, role: "Admin" },
-  { id: 2, role: "Agent" },
+export const userRoles: { id: number; label: string }[] = [
+  { id: 0, label: "All Roles" },
+  { id: 1, label: "Admin" },
+  { id: 2, label: "Agent" },
   {
     id: 3,
-    role: "Landlord",
+    label: "Landlord",
   },
   {
     id: 4,
-    role: "Renter",
+    label: "Renter",
   },
   {
     id: 5,
-    role: "Guest",
+    label: "Guest",
   },
 ];
 
-export const status: { id: number; status: string }[] = [
-  { id: 0, status: "All Status" },
-  { id: 1, status: "Active" },
-  { id: 2, status: "Inactive" },
-  {
-    id: 3,
-    status: "Pending",
-  },
+export const userStatus: { id: number; label: string }[] = [
+  { id: 0, label: "All Status" },
+  { id: 1, label: "Active" },
+  { id: 2, label: "Inactive" },
 ];
