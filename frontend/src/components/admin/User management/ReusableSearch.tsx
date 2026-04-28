@@ -1,16 +1,12 @@
 import { SearchIcon } from "lucide-react";
-import { useContext, useEffect, useState, type ChangeEvent } from "react";
-import { UserManagementContext } from "../../../context/user_management_context/UserManagementContext";
-import { rwandaUsersData } from "../../../data/AdminUsersData";
+import { useEffect, useState, type ChangeEvent } from "react";
 
-function UsersSearch() {
-  const ctx = useContext(UserManagementContext);
-  if (!ctx) {
-    throw new Error("UserManagementContext is not available");
-  }
-  const { setUsers } = ctx;
+interface ReusableSearchProps {
+  setDebouncedQuery: React.Dispatch<React.SetStateAction<string>>;
+}
+
+function ReusableSearch({ setDebouncedQuery }: ReusableSearchProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -22,15 +18,6 @@ function UsersSearch() {
     }, 350);
     return () => clearTimeout(timer);
   }, [searchQuery]);
-
-  useEffect(() => {
-    setUsers(() => {
-      if (!debouncedQuery) return rwandaUsersData;
-      return rwandaUsersData.filter((user) =>
-        user.name.toLowerCase().includes(debouncedQuery),
-      );
-    });
-  }, [debouncedQuery, setUsers]);
 
   return (
     <div className=" min-w-0 relative border shadow-inner shadow-gray-50 dark:shadow-none  border-gray-300 dark:border-gray-800  w-full md:max-w-[45%] bg-white  dark:bg-gray-800/60 rounded-2xl overflow-hidden  ">
@@ -48,4 +35,4 @@ function UsersSearch() {
   );
 }
 
-export default UsersSearch;
+export default ReusableSearch;
