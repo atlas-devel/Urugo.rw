@@ -509,6 +509,9 @@ model AdminLog {
   targetType String // "Property", "User", "Lease", "Payment"
   targetId   String // ID of the affected entity
 
+  // affected data
+  affectedData String? //Json data of affected data
+
   // Details
   details   String? @db.Text
   ipAddress String?
