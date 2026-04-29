@@ -32,6 +32,7 @@ export interface LogData {
   adminName?: string;
   adminEmail?: string;
   action: string;
+  affectedData?: string;
   details?: string; // Optional field for additional details about the action
   targetType: string; // e.g., "USER", "PROPERTY", "LEASE"
   targetId: string; // ID of the user, property, or lease affected by the action

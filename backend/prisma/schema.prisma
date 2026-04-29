@@ -510,7 +510,7 @@ model AdminLog {
   targetId   String // ID of the affected entity
 
   // affected data
-  affectedData String? //Json data of affected data
+  affectedData String? @default("No affected data") //Json data of affected data
 
   // Details
   details   String? @db.Text

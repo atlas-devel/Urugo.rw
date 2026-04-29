@@ -9,10 +9,7 @@ import prisma from "../../utils/prisma";
 import { generateOTP } from "../../utils/otp_generator";
 import makeAdminLog from "../../utils/makeAdminLog";
 import makeNotification from "../../utils/makeNotification";
-import {
-  generateAffectedUpdatedData,
-  generateText,
-} from "../../utils/updateTextAction";
+import { generateAffectedUpdatedData } from "../../utils/updateTextAction";
 
 export const createUser = async (req: Request, res: Response) => {
   const {
