@@ -1,4 +1,3 @@
-import { useContext } from "react";
 import PropertiesTableUI from "./PropertiesTableUI";
 
 function PropertiesTable() {

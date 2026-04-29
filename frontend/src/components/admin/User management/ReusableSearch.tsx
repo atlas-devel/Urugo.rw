@@ -21,7 +21,7 @@ function ReusableSearch({
       setDebouncedQuery(searchQuery);
     }, 350);
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery, setDebouncedQuery]);
 
   return (
     <div className=" min-w-0 relative border shadow-inner shadow-gray-50 dark:shadow-none  border-gray-300 dark:border-gray-800  w-full md:max-w-[45%] bg-white  dark:bg-gray-800/60 rounded-2xl overflow-hidden  ">

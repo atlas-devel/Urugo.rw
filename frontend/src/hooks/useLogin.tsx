@@ -3,7 +3,7 @@ import api from "../lib/axios";
 import AuthContext from "../context/auth/AuthContext";
 
 function useLogin() {
-  const [error, setError] = useState<String | null>(null);
+  const [error, setError] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const { setIsAuth}=useContext(AuthContext)!
   

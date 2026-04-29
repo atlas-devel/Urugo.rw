@@ -1,6 +1,7 @@
 import { useContext } from "react";
 import { Trash, Eye, Pencil } from "lucide-react";
 import PropertyManagementContext from "../../../context/property_management_context/PropertyManagementContext";
+import type { Property } from "../../../@types/types";
 
 function PropertiesTableUI({
   start = 0,
@@ -25,12 +26,12 @@ function PropertiesTableUI({
         </tr>
       </thead>
       <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-        {properties?.slice(start, end).map((property: any) => (
+        {properties?.slice(start, end).map((property: Property) => (
           <tr
             key={property.id}
             className="text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800/50 transition-colors duration-200 "
           >
-            <td className="p-3 uppercase font-medium text-green-800 dark:text-green-500">
+            <td className="p-3 uppercase font-medium text-green-800 dark:text-green-600">
               {property.id}
             </td>
             <td className="p-3">{property.address}</td>
@@ -59,9 +60,7 @@ function PropertiesTableUI({
               </span>
             </td>
             <td className="p-3">{property.monthlyRent}</td>
-            <td className="p-3">
-              {property.landlord?.name || property.landlord}
-            </td>
+            <td className="p-3">{property.landlordId}</td>
             <td className="p-3">
               {new Date(property.createdAt).toDateString()}
             </td>

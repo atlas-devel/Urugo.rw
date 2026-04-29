@@ -11,6 +11,9 @@ function DesktopLogin() {
     formState: { errors },
   } = useForm<{ email?: string; phoneNumber?: string; password: string }>({});
 
+  // placeholder to remove the unused variable warning, will be used in the future for error handling and loading states
+  console.log(error, isLoading, errors);
+
   const onSubmit = async (credential: {
     email?: string;
     phoneNumber?: string;
