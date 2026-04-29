@@ -77,3 +77,45 @@ export interface UserTablePaginationProps {
   totalusers: number;
   setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
 }
+
+export interface Property {
+  id: string;
+  landlordId: string;
+  agentId: string;
+  property_number: string;
+  address: string;
+  city: string;
+  province: string;
+  district: string;
+  sector: string;
+  cell: string;
+  bedrooms: number;
+  bathrooms: number;
+  hasParking: boolean;
+  hasWifi: boolean;
+  securityIncluded: boolean;
+  monthlyRent: number;
+  initialPamentMonths: number;
+  initialPaymentPrice: number;
+  includesWater: boolean;
+  includesElectricity: boolean;
+  property_type: "APARTMENT" | "HOUSE" | "STUDIO" | "ROOM" | "COMMERCIAL";
+  description: string;
+  property_photos: string[];
+  amenities: string[];
+  contract_url: string | undefined;
+  status:
+    | "DRAFT"
+    | "PENDING_APPROVAL"
+    | "REJECTED"
+    | "AVAILABLE"
+    | "RESERVED"
+    | "OCCUPIED"
+    | "MAINTENANCE"
+    | "OFF_MARKET";
+  isActive: boolean;
+  approvedAt: Date;
+  approvedBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}

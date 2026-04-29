@@ -3,9 +3,13 @@ import { useEffect, useState, type ChangeEvent } from "react";
 
 interface ReusableSearchProps {
   setDebouncedQuery: React.Dispatch<React.SetStateAction<string>>;
+  placeholder: string;
 }
 
-function ReusableSearch({ setDebouncedQuery }: ReusableSearchProps) {
+function ReusableSearch({
+  setDebouncedQuery,
+  placeholder,
+}: ReusableSearchProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
@@ -25,7 +29,7 @@ function ReusableSearch({ setDebouncedQuery }: ReusableSearchProps) {
         value={searchQuery}
         onChange={handleSearch}
         type="text"
-        placeholder="Search by name or email..."
+        placeholder={placeholder}
         className="relative w-full h-full z-20 placeholder-gray-500  placeholder:font-medium outline-none border-none p-3 pl-10"
       />
       <span className="absolute  p-3 pb-4 -translate-y-0.5 inset-0 text-gray-500">
