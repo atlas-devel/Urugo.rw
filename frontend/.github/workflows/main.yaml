@@ -20,5 +20,5 @@ jobs:
         with:
           node-version: 22
 
-      - run: npm install
-      - run: npm run lint
+      - run: pnpm install
+      - run: pnpm lint
