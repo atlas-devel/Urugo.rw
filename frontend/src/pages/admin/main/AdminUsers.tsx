@@ -1,5 +1,5 @@
-import UsersTable from "../../../components/admin/users/UsersTable";
-import UserSearchFilter from "../../../components/admin/users/UserSearchFilter";
+import UsersTable from "../../../components/admin/User management/UsersTable";
+import UserSearchFilter from "../../../components/admin/User management/UserSearchFilter";
 import { UserManagementProvider } from "../../../context/user_management_context/UserManagementProvider";
 import { Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";

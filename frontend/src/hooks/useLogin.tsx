@@ -1,12 +1,12 @@
 import { useContext, useState } from "react";
 import api from "../lib/axios";
 import AuthContext from "../context/auth/AuthContext";
+import type { AxiosError } from "axios";
 
 function useLogin() {
-  const [error, setError] = useState<String | null>(null);
+  const [error, setError] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
-  const { setIsAuth}=useContext(AuthContext)!
-  
+  const { setIsAuth } = useContext(AuthContext)!;
 
   const handleLogin = async (credentials: {
     email?: string;
@@ -41,7 +41,8 @@ function useLogin() {
         success: false,
         message: "Unexpected response from server.",
       };
-    } catch (error: any) {
+    } catch (err) {
+      const error = err as AxiosError<{ message: string }>;
       setError("An error occurred while trying to login.");
       console.error("Login error:", error.response?.data.message || error);
     } finally {
