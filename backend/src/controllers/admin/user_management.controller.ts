@@ -231,6 +231,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
         role: true,
         banned: true,
         createdAt: true,
+        isActive: true,
       },
     });
     if (users.length === 0) {

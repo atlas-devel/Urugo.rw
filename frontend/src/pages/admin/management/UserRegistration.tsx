@@ -1,9 +1,10 @@
-import { Camera } from "lucide-react";
+import { ArrowLeft, Camera } from "lucide-react";
 import {
   districts,
   registrationRoles,
 } from "../../../data/registrationFormData";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 
 interface FormData {
   profile_image: FileList;
@@ -27,28 +28,51 @@ function UserRegistration() {
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<FormData>();
+
+  const [selectedRole, profile_image] = watch(["role", "profile_image"]);
 
   const submitFormData = (data: FormData) => {
     console.log(data);
   };
 
+  const navigate = useNavigate();
+
   return (
     <div className="w-full p-4 md:p-6 lg:py-2 lg:p-8 bg-background dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm shadow-secondary-color/10">
-      <h1 className="py-8  font-semibold text-xl text-gray-900 dark:text-gray-300">
-        Add New User
-      </h1>
+      <div className="flex items-center justify-between">
+        <h1 className="py-8  font-semibold text-xl text-gray-900 dark:text-gray-300">
+          Add New User
+        </h1>
+        <button
+          onClick={() => navigate(-1)}
+          className="p-2 rounded-lg text-xl text-gray-900 dark:text-gray-300 dark:hover:text-white hover:bg-gray-200 duration-300 bg-gray-100 dark:bg-gray-800/20 dark:backdrop-blur-3xl border-gray-100 shadow-sm border dark:border-gray-100/20 cursor-pointer"
+        >
+          <ArrowLeft />
+        </button>
+      </div>
       <form onSubmit={handleSubmit(submitFormData)}>
         <div>
           <h1 className="text-gray-900 dark:text-gray-300 text-sm font-mono font-semibold tracking-wider md:border-b-2 md:border-gray-100 dark:border-gray-700/20 pb-2 mb-2 md:mb-6">
             IDENTITY PRESENCE
           </h1>
           <div className="flex items-center gap-4 ">
-            <div className="relative flex items-center justify-center shrink-0 w-18 h-18 md:w-24 md:h-24 border-2 border-dashed border-gray-400 dark:border-gray-500 rounded-2xl bg-gray-100 dark:bg-gray-800/30">
-              <span className="text-gray-400 dark:text-gray-500">
-                <Camera size={28} />
-              </span>
+            <div className="relative flex items-center justify-center shrink-0 w-18 h-18 md:w-24 md:h-24 border-2 border-dashed border-gray-400 dark:border-gray-500 overflow-hidden rounded-2xl bg-gray-100 dark:bg-gray-800/30">
+              {profile_image && profile_image.length > 0 ? (
+                <img
+                  src={URL.createObjectURL(profile_image[0])}
+                  alt="Profile Preview"
+                  className="w-full h-full object-cover rounded-2xl"
+                />
+              ) : (
+                <span className="text-gray-400 dark:text-gray-500">
+                  <Camera size={28} />
+                </span>
+              )}
+
               <input
                 className="absolute w-full h-full text-transparent inset-0"
                 type="file"
@@ -221,15 +245,30 @@ function UserRegistration() {
               {registrationRoles.map(({ id, role, Icon, description }) => (
                 <div
                   key={id}
-                  className=" group relative hover:-translate-y-1 overflow-hidden hover:scale-102 cursor-pointer hover:shadow-md hover:shadow-secondary-color/30  duration-400 md:w-full md:p-6 p-4 bg-gray-100 rounded-lg dark:bg-gray-800/40 dark:backdrop-blur-3xl border-gray-100 shadow-sm border dark:border-gray-100/6"
+                  onClick={() =>
+                    setValue("role", role, { shouldValidate: true })
+                  }
+                  className={`group relative hover:-translate-y-1 overflow-hidden hover:scale-102 cursor-pointer hover:shadow-md hover:shadow-secondary-color/30 duration-400 md:w-full md:p-6 p-4 rounded-lg shadow-sm border ${
+                    selectedRole === role
+                      ? "bg-blue-50 border-blue-500 dark:bg-blue-900/40 dark:border-blue-500"
+                      : "bg-gray-100 dark:bg-gray-800/40 dark:backdrop-blur-3xl border-gray-100 dark:border-gray-100/6"
+                  }`}
                 >
-                  <div className="hidden  group-hover:block group-hover:duration-300 transition-colors absolute left-0 top-2  dark:bg-blue-600/80 w-13 h-14 rounded-full -z-2 blur-xl" />
+                  <div className="hidden group-hover:block group-hover:duration-300 transition-colors absolute left-0 top-2 dark:bg-blue-600/80 w-13 h-14 rounded-full -z-2 blur-xl" />
                   <div className="flex items-center justify-between">
                     <span>
                       <Icon />
                     </span>
-                    <span className="bg-gray-100 dark:bg-gray-400 w-5 h-5 rounded-full border-4 border-black dark:border-gray-100">
-                      <div className="bg-gray-400 dark:bg-blue-600 w-full h-full rounded-full" />
+                    <span
+                      className={`w-5 h-5 rounded-full border-4 flex items-center justify-center ${
+                        selectedRole === role
+                          ? "border-blue-600 dark:border-blue-500 bg-transparent"
+                          : "border-black dark:border-gray-100 bg-gray-100 dark:bg-gray-400"
+                      }`}
+                    >
+                      {selectedRole === role && (
+                        <div className="bg-blue-600 dark:bg-blue-500 w-2.5 h-2.5 rounded-full" />
+                      )}
                     </span>
                   </div>
                   <h1 className="tracking-wider font-semibold md:py-2">
@@ -239,6 +278,14 @@ function UserRegistration() {
                 </div>
               ))}
             </div>
+            {/* hidden input for validation */}
+            <input
+              type="hidden"
+              {...register("role", { required: "Please assign a role" })}
+            />
+            {errors.role && (
+              <p className="text-red-500 text-xs mt-4">{errors.role.message}</p>
+            )}
           </div>
           {/* security Credentials */}
           <div>

@@ -77,6 +77,27 @@
   font-family:"Inter"
 }
 
+@media screen and (max-width:340px) {
+  .login-container{
+    top:5%
+
+  }
+  .login-form{
+    padding: 2rem;
+  }
+  .login-button {
+    width:4rem  ;
+    height:4rem;
+  }
+  .login-welcome-container{
+    display:none;
+  }
+  .register-link{
+    font-size: 0.75rem
+  }
+  
+}
+
 /*---break---  */
 
 @layer base {

@@ -15,11 +15,21 @@ import AdminSettings from "../pages/admin/system/AdminSettings";
 import AdminSupport from "../pages/admin/system/AdminSupport";
 import NotFound from "../pages/admin/NotFound";
 import AddUser from "../pages/admin/management/UserRegistration";
+import LoginPage from "../pages/public/LoginPage";
+import RegisterPage from "../pages/public/RegisterPage";
+import ProtectedRoute from "./ProtectedRoute";
 
 function AppRoutes() {
   return (
     <Routes>
-      <Route element={<AdminLayout />}>
+      {/* admin layout */}
+      <Route
+        element={
+          <ProtectedRoute>
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
         {/* Main */}
         <Route path={routes.DASHBOARD} element={<AdminDashboard />} />
         <Route path={routes.USERS} element={<AdminUsers />} />
@@ -44,10 +54,14 @@ function AppRoutes() {
         <Route path={routes.ADMIN_LOGS} element={<AdminLogs />} />
         <Route path={routes.SETTINGS} element={<AdminSettings />} />
         <Route path={routes.SUPPORT} element={<AdminSupport />} />
-
-        {/* Catch all - redirect to dashboard */}
-        <Route path="*" element={<NotFound />} />
       </Route>
+      {/* public routes */}
+      <Route>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+      </Route>
+      {/* Catch all - redirect to dashboard */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
