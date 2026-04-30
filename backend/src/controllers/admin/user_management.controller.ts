@@ -9,6 +9,7 @@ import prisma from "../../utils/prisma";
 import { generateOTP } from "../../utils/otp_generator";
 import makeAdminLog from "../../utils/makeAdminLog";
 import makeNotification from "../../utils/makeNotification";
+import { generateAffectedUpdatedData } from "../../utils/updateTextAction";
 
 export const createUser = async (req: Request, res: Response) => {
   const {
@@ -217,7 +218,6 @@ export const getAllUsers = async (req: Request, res: Response) => {
   if (req.query.district) where.district = req.query.district;
   if (req.query.sector) where.sector = req.query.sector;
   if (req.query.cell) where.cell = req.query.cell;
-
   try {
     const users = await prisma.user.findMany({
       where: where,
@@ -456,6 +456,7 @@ export const updateUser = async (req: Request, res: Response) => {
     sector,
     cell,
     address,
+    details,
   } = req.body;
 
   if (!userId) {
@@ -466,24 +467,57 @@ export const updateUser = async (req: Request, res: Response) => {
     res.status(400).json({ success: false, message: "Invalid email format" });
     return;
   }
+
+  if (details && details.length > 500) {
+    res.status(400).json({
+      success: false,
+      message: "Details cannot exceed 500 characters",
+    });
+    return;
+  }
+
   try {
-    const updateUser = await prisma.user.update({
-      where: { id: userId },
-      data: {
-        name,
-        email,
-        phoneNumber,
-        role,
-        nationalId,
-        issueCountry,
-        country,
-        city,
-        province,
-        district,
-        sector,
-        cell,
-        address,
-      },
+    const [existingUser, updateUser] = await Promise.all([
+      prisma.user.findFirst({
+        where: { id: userId },
+        select: {
+          id: true,
+          name: true,
+          role: true,
+        },
+      }),
+      prisma.user.update({
+        where: { id: userId },
+        data: {
+          name,
+          email,
+          phoneNumber,
+          role,
+          nationalId,
+          issueCountry,
+          country,
+          city,
+          province,
+          district,
+          sector,
+          cell,
+          address,
+        },
+      }),
+    ]);
+
+    const updatedFields = generateAffectedUpdatedData(req.body);
+
+    makeAdminLog({
+      adminName: req.userInfo?.name || "Unknown Admin",
+      adminEmail: req.userInfo?.email || "Unkown Email",
+      action: "UPDATE_USER",
+      targetType: existingUser?.role as string,
+      targetId: updateUser.id,
+      affectedData: updatedFields,
+      details: details || "No additional details provided",
+    }).catch((error) => {
+      console.error("Error creating admin log:", error);
     });
     res.status(200).json({
       success: true,
