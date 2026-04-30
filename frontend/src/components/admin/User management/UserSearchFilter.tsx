@@ -23,7 +23,8 @@ function UserSearchFilter() {
         user.name.toLowerCase().includes(debouncedQuery),
       );
     });
-  }, [debouncedQuery, setUsers]);
+    setCurrentPage(1); // reset to first page on search
+  }, [debouncedQuery, setUsers, setCurrentPage]);
 
   // filtering logic
   const defaultRole = "All Roles";
