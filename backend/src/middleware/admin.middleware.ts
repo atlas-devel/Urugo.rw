@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 
+// this middleware is only for admins
 export const ProtectedRoute = (
   req: Request,
   res: Response,

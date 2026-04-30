@@ -3,7 +3,7 @@ import {
   districts,
   registrationRoles,
 } from "../../../data/registrationFormData";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
 interface FormData {
@@ -29,11 +29,14 @@ function UserRegistration() {
     register,
     handleSubmit,
     setValue,
-    watch,
+    control,
     formState: { errors },
   } = useForm<FormData>();
 
-  const [selectedRole, profile_image] = watch(["role", "profile_image"]);
+  const [selectedRole, profile_image] = useWatch({
+    control,
+    name: ["role", "profile_image"],
+  });
 
   const submitFormData = (data: FormData) => {
     console.log(data);
