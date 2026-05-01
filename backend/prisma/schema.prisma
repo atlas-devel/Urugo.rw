@@ -34,13 +34,16 @@ model User {
   deactivationReason  String?
   deactivateOtp       String?
   deactivateOtpExpiry DateTime?
+  deactivationExpiresAt     DateTime? // when the deactivation expires and the user can log in again, null means permanent deactivation until admin manually reactivates the account
+
 
   role Role @default(GUEST)
 
   // account status
   banned     Boolean?  @default(false)
   banReason  String?
-  banExpires DateTime?
+  // banExpires DateTime? //remove ban expiration for now
+  // the user will be banned permanently until an admin manually unbans them,
   // username removed
 
   // identity info
