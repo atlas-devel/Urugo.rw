@@ -24,7 +24,7 @@ export interface NotificationData {
   receiverId: string;
   title: string;
   message: string;
-  actionUrl?: string; // Optional URL for the notification action
+  actionUrl?: string; // Optional URL for the notification action ex: "View Details", "Go to Dashboard", etc.
 }
 
 export interface LogData {

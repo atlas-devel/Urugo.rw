@@ -83,7 +83,6 @@ export const createUser = async (req: Request, res: Response) => {
       nationalId: true,
       banned: true,
       banReason: true,
-      banExpires: true,
       email: true,
       phoneNumber: true,
     },
@@ -91,15 +90,16 @@ export const createUser = async (req: Request, res: Response) => {
 
   if (existingUser) {
     // banned user
-    if (existingUser.banned && new Date() < (existingUser.banExpires ?? 0)) {
+    if (existingUser.banned) {
       res.status(403).json({
         success: false,
-        message: `User is banned until ${existingUser.banExpires}. Reason: ${existingUser.banReason}`,
+        message: `User is banned. Reason: ${existingUser.banReason}`,
       });
       return;
     }
-    // validate duplicate phone number
+
     if (existingUser.phoneNumber === phoneNumber) {
+      // validate duplicate phone number
       res.status(400).json({
         success: false,
         message: "Phone number is already associated with another account",
@@ -182,7 +182,10 @@ export const createUser = async (req: Request, res: Response) => {
         title: "Account Created",
         message: `Hello ${newUser.name}, your account has been created successfully. You can now start to use our services.`,
       },
-      newUser.email,
+      {
+        isRequired: true,
+        receiverEmail: newUser.email!,
+      },
     ).catch((error) => {
       console.error("Error creating notification:", error);
       throw new Error("Error creating notification at create user: " + error);
@@ -347,10 +350,12 @@ export const getUserDetailsById = async (req: Request, res: Response) => {
     });
   }
 };
+// removed ban expiration datea and added it to deactivation controller
+//  since banning is now permanent until manually unbanned by admin,
+// and deactivation can be temporary with expiration date after which the user can log in again
 export const banUser = async (req: Request, res: Response) => {
   const userId = req.params.userId as string;
   const bannReason = req.body.reason as string;
-  const banDuration = req.body.duration as number; //in days, for example if the admin wants to ban the user for 7 days, they will send 7 in the request body
   if (!userId) {
     res.status(400).json({ success: false, message: "User ID is required" });
     return;
@@ -371,20 +376,40 @@ export const banUser = async (req: Request, res: Response) => {
         .json({ success: false, message: "User is already banned" });
       return;
     }
-    const banExpires = banDuration
-      ? new Date(banDuration) //date will come from date-time picker in the frontend, for example if the admin selects to ban the user until 2024-07-01, the frontend will send that date in the request body and we will set it as the ban expiry date, if no duration is provided, we can set a default ban duration of 30 days for example
-      : null; //use is banned indefinitely until the admin decides to unban them
 
     const bannedUser = await prisma.user.update({
       where: { id: userId },
       data: {
         banned: true,
         banReason: bannReason ? bannReason : "No reason provided",
-        banExpires,
       },
     });
-    //TODO:store admin logs for banning user
-    //TODO:notify the user about their ban via email
+    // admin logs for banning user
+    makeAdminLog({
+      adminName: req.userInfo?.name || "Unknown Admin",
+      adminEmail: req.userInfo?.email || "Unknown Admin Email",
+      action: `Banned ${bannedUser.name} with ID ${bannedUser.id}`,
+      targetType: bannedUser.role,
+      targetId: bannedUser.id,
+      details: `Reason: ${bannReason ? bannReason : "No reason provided"}`,
+    }).catch((error) => {
+      console.error("Error creating admin log:", error);
+    });
+    //notify the user about their ban via email
+    makeNotification(
+      {
+        type: "ACCOUNT_BANNED" as NotificationType,
+        receiverId: bannedUser.id,
+        senderId: req.userInfo?.email || "System",
+        title: "Account Banned",
+        message: `Hello ${bannedUser.name}, your account has been banned. ${bannReason && `Reason: ${bannReason}`}. If you believe this is a mistake, please contact our support team for assistance.`,
+      },
+      {
+        isRequired: true,
+        receiverEmail: bannedUser.email!,
+      },
+    );
+
     res.status(200).json({
       success: true,
       message: `User ${bannedUser.name} has been banned successfully`,
@@ -422,7 +447,6 @@ export const unbanUser = async (req: Request, res: Response) => {
       data: {
         banned: false,
         banReason: null,
-        banExpires: null,
       },
     });
     //TODO:store admin logs for unbanning user
@@ -610,7 +634,7 @@ export const deleteUser = async (req: Request, res: Response) => {
       console.error("Error creating admin log:", error);
     });
 
-    //send notification to the user about their account creation with fire and forget method for better performance
+    //sende email and nitification about account deletion with fire and forget method for better performance
     makeNotification(
       {
         type: "ACCOUNT_DELETED" as NotificationType,
@@ -619,7 +643,10 @@ export const deleteUser = async (req: Request, res: Response) => {
         title: "Account Deleted",
         message: `Hello ${deletedUser.name}, your account has been deleted.`,
       },
-      deletedUser.email,
+      {
+        isRequired: true,
+        receiverEmail: deletedUser.email!,
+      },
     ).catch((error) => {
       console.error("Error creating notification:", error);
     });
@@ -789,9 +816,12 @@ export const getUserStatistics = async (req: Request, res: Response) => {
   }
 };
 
-export const deactivateUser = async (req: Request, res: Response) => {
+export const DeactivateUser = async (req: Request, res: Response) => {
   const userId = req.params.userId as string;
-  const { reason } = req.body as { reason: string };
+  const { reason, deactivationDuration } = req.body as {
+    reason: string;
+    deactivationDuration: Date;
+  };
   if (!userId) {
     res.status(400).json({ success: false, message: "User ID is required" });
     return;
@@ -811,103 +841,142 @@ export const deactivateUser = async (req: Request, res: Response) => {
       return;
     }
 
-    if (!existingUser.isActive) {
-      res.status(400).json({
-        success: false,
-        message: "User was already Deactivated",
-      });
-      return;
-    }
     if (existingUser.role === "ADMIN") {
       res.status(400).json({
         success: false,
-        message: "High Priviledge user can't be deleted",
+        message: "High Priviledge user can't be deactivated",
       });
       return;
     }
-
-    const affectedUsers = await prisma.user.findMany({
-      where: {
-        renterLeases: {
-          some: {
-            landlordId: userId,
-            status: "ACTIVE",
+    if (!existingUser.isActive) {
+      res.status(400).json({
+        success: false,
+        message: "User is already deactivated",
+      });
+      return;
+    }
+    if (existingUser.role === "LANDLORD") {
+      const affectedUsers = await prisma.user.findMany({
+        where: {
+          renterLeases: {
+            some: {
+              landlordId: userId,
+              status: "ACTIVE",
+            },
           },
         },
-      },
-      select: {
-        id: true,
-        email: true,
-      },
-    });
+        select: {
+          id: true,
+          email: true,
+        },
+      });
 
-    await Promise.all([
-      //update user record to set deactivation fields
-      prisma.user.update({
-        where: { id: userId },
-        data: {
-          deactivatedAt: new Date(),
-          deactivatedBy: `ADMIN: ${req.userInfo?.name}`,
-          deactivationReason: reason || "No reason provided",
-          isActive: false,
-          banned: false,
-        },
-      }),
-      //set all properties owned by the user to INACTIVE so that they are not visible to renters and can't be leased until the admin decides to reactivate the user and their properties
-      prisma.property.updateMany({
-        where: { landlordId: userId },
-        data: {
-          isActive: false,
-        },
-      }),
-      //set all leases where the user is a landlord to INACTIVE so that they are not active until the admin decides to reactivate the user and their leases
-      prisma.lease.updateMany({
-        where: { landlordId: userId },
-        data: {
-          isActive: false,
-          status: "INACTIVE",
-        },
-      }),
-      //store admin log for deactivating user, we can create a log entry with the admin's name, email, action (deactivated user), details (reason for deactivation) and the target user ID
-      makeAdminLog({
-        adminName: req.userInfo?.name || "Unknown Admin",
-        adminEmail: req.userInfo?.email || "Unknown Admin Email",
-        action: `Deactivated ${existingUser?.name} ${existingUser.role} with ID ${userId}`,
-        details: `Reason: ${reason || "No reason provided"}`,
-        targetType: "USER",
-        targetId: userId,
-      }),
-    ]);
+      //set all properties owned by the user to INACTIVE so that they are not visible to renters and
+      // can't be leased until the admin decides to reactivate the user and their properties
 
-    Promise.all([
-      //send notifications to affected users about the deactivation of the landlord and the reason for that, we can use the getAffectedUsers array to get the email addresses of the affected users and send them notifications via email or in-app notifications
+      await Promise.all([
+        //update user account deactivation records
+        prisma.user.update({
+          where: { id: userId },
+          data: {
+            isActive: !existingUser.isActive,
+            deactivatedAt: new Date(),
+            deactivatedBy: `ADMIN: ${req.userInfo?.name}`,
+            deactivationReason: reason || "No reason provided",
+            deactivationExpiresAt: deactivationDuration
+              ? new Date(deactivationDuration)
+              : null,
+          },
+        }),
+        //set all properties owned by the user to INACTIVE so that they are not visible to renters and can't be leased until the admin decides to reactivate the user and their properties
+        prisma.property.updateMany({
+          where: { landlordId: userId },
+          data: {
+            isActive: false,
+          },
+        }),
+        //set all leases where the user is a landlord to INACTIVE so that they are not active until the admin decides to reactivate the user and their leases
+        prisma.lease.updateMany({
+          where: { landlordId: userId },
+          data: { isActive: false, status: "INACTIVE" },
+        }),
+      ]);
+
+      //send notifications to affected users about the deactivation of the landlord
+      // and the reason for that
+
       affectedUsers.map((user) => {
         makeNotification(
           {
-            type: "ACCOUNT_DEACTIVATED",
+            type: "ACCOUNT_DEACTIVATED" as NotificationType,
             senderId: req.userInfo?.email || "Unknown Admin Email",
             receiverId: user.id,
             title: "Account Deactivation Notice",
             message: `Dear User, we regret to inform you that the landlord associated with your lease has been deactivated. This action was taken for the following reason: ${reason || "No reason provided"}. During this period, you may experience limited access to certain features related to this landlord. We apologize for any inconvenience caused and appreciate your understanding. If you have any questions or need further assistance, please contact our support team.`,
           },
-          user.email!,
+          {
+            isRequired: true,
+            receiverEmail: user.email!,
+          },
         ).catch((error) => {
           console.error(
             `Error sending notification to user ${user.id} about landlord deactivation:`,
             error,
           );
         });
-      }),
-    ]);
+      });
+
+      //make log
+      makeAdminLog({
+        adminName: req.userInfo?.name || "Unknown Admin",
+        adminEmail: req.userInfo?.email || "Unknown Admin Email",
+        action: `Deactivated ${existingUser.name} ${existingUser.role} with ID ${userId}`,
+        targetType: existingUser.role,
+        targetId: userId,
+        details: `Reason: ${reason || "No reason provided"}`,
+      }).catch((error) => {
+        console.error("Error creating admin log:", error);
+      });
+
+      res.status(200).json({
+        success: true,
+        message: "User deactivated successfully",
+      });
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        isActive: !existingUser.isActive,
+        deactivatedAt: new Date(),
+        deactivatedBy: `ADMIN: ${req.userInfo?.name}`,
+        deactivationReason: reason || "No reason provided",
+        deactivationExpiresAt: deactivationDuration
+          ? new Date(deactivationDuration)
+          : null,
+      },
+    });
+
+    //make log
+    makeAdminLog({
+      adminName: req.userInfo?.name || "Unknown Admin",
+      adminEmail: req.userInfo?.email || "Unknown Admin Email",
+      action: `Deactivated ${existingUser.name} ${existingUser.role} with ID ${userId}`,
+      targetType: existingUser.role,
+      targetId: userId,
+      details: `Reason: ${reason || "No reason provided"}`,
+    }).catch((error) => {
+      console.error("Error creating admin log:", error);
+    });
+
     res.status(200).json({
       success: true,
       message: "User deactivated successfully",
     });
   } catch (error) {
-    console.log("Error at Deactivating user: " + error);
     res.status(500).json({
       success: false,
-      message: "Deactivating user failed",
+      message: "Internal server error",
     });
   }
 };

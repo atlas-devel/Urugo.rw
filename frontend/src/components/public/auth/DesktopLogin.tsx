@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import useLogin from "../../hooks/useLogin";
+import useLogin from "../../../hooks/useLogin";
 import { useForm } from "react-hook-form";
 
 function DesktopLogin() {
@@ -43,7 +43,7 @@ function DesktopLogin() {
         <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="  bg-blue-50  rounded-2xl min-w-100 w-full overflow-hidden">
             <input
-              className="p-4 px-4 w-full placeholder:text-gray-500  h-full border-none outline-none"
+              className="p-3 px-4 w-full placeholder:text-gray-500  h-full border-none outline-none"
               type="email"
               placeholder="Email Address"
               autoComplete="off"
@@ -52,7 +52,7 @@ function DesktopLogin() {
           </div>
           <div className="  bg-blue-50  rounded-2xl min-w-100 w-full overflow-hidden">
             <input
-              className="p-4 px-4 w-full placeholder:text-gray-500  h-full border-none outline-none"
+              className="p-3 px-4 w-full placeholder:text-gray-500  h-full border-none outline-none"
               type="text"
               placeholder="Phone number"
               autoComplete="off"
@@ -61,7 +61,7 @@ function DesktopLogin() {
           </div>
           <div className="  bg-blue-50  rounded-2xl min-w-100 w-full overflow-hidden">
             <input
-              className="p-4 px-4 w-full placeholder:text-gray-500  h-full border-none outline-none"
+              className="p-3 px-4 w-full placeholder:text-gray-500  h-full border-none outline-none"
               type="password"
               placeholder="Password"
               autoComplete="off"
@@ -88,20 +88,20 @@ function DesktopLogin() {
           <div className="flex items-center justify-center">
             <button
               type="submit"
-              className="p-2 my-2 mt-0.5  px-8 rounded-full font-semibold cursor-pointer bg-linear-to-r from-blue-500 to-blue-800  text-white"
+              className="p-2 my-2 mt-0.5  px-8 rounded-full font-semibold cursor-pointer bg-linear-to-r from-blue-500 to-blue-700  text-white"
             >
               SIGN IN
             </button>
           </div>{" "}
         </form>
       </div>
-      <div className="max-lg:hidden bg-linear-to-br from-blue-600 to-blue-900 space-y-4 text-white p-12 py-30 fle-1 flex flex-col items-center justify-center ">
+      <div className="max-lg:hidden bg-linear-to-br from-blue-600 to-blue-700 space-y-4 text-white p-12 py-30 fle-1 flex flex-col items-center justify-center ">
         <h1 className="font-semibold text-3xl">Hey There!</h1>
         <p className="text-center text-gray-100 ">
           Begin your amazing journey by creating <br />
           an account with us today
         </p>
-        <button className="z-1 overflow-hidden text-white relative group duraion-300 transition-colors hover:text-gray-800 p-2 mt-4 font-semibold px-10 cursor-pointer rounded-full border-2 border-white">
+        <button className="z-1 overflow-hidden text-white relative group duration-300 transition-colors hover:text-gray-800 p-2 mt-4 font-semibold px-10 cursor-pointer rounded-full border-2 border-white">
           <span className="bg-white absolute inset-0 translate-y-12 group-hover:translate-0 -z-1 duration-300  " />
           SIGN UP
         </button>

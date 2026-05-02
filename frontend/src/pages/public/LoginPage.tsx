@@ -1,5 +1,5 @@
-import DesktopLogin from "../../components/public/DesktopLogin";
-import MobileLogin from "../../components/public/MobileLogin";
+import DesktopLogin from "../../components/public/auth/DesktopLogin";
+import MobileLogin from "../../components/public/auth/MobileLogin";
 
 function LoginPage() {
   return (
