@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import useLogin from "../../hooks/useLogin";
+import useLogin from "../../../hooks/useLogin";
 import { useForm } from "react-hook-form";
 
 function DesktopLogin() {
@@ -101,7 +101,7 @@ function DesktopLogin() {
           Begin your amazing journey by creating <br />
           an account with us today
         </p>
-        <button className="z-1 overflow-hidden text-white relative group duraion-300 transition-colors hover:text-gray-800 p-2 mt-4 font-semibold px-10 cursor-pointer rounded-full border-2 border-white">
+        <button className="z-1 overflow-hidden text-white relative group duration-300 transition-colors hover:text-gray-800 p-2 mt-4 font-semibold px-10 cursor-pointer rounded-full border-2 border-white">
           <span className="bg-white absolute inset-0 translate-y-12 group-hover:translate-0 -z-1 duration-300  " />
           SIGN UP
         </button>
