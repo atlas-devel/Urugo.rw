@@ -1,9 +1,15 @@
+import ExistingProblems from "../../components/public/ExistingProblems/ExistingProblems";
+import PropertyFeatures from "../../components/public/Features/PropertyFeatures";
 import Hero from "../../components/public/hero/Hero";
+import UrugoFixes from "../../components/public/UrugoFixes/UrugoFixes";
 
 function LandingPage() {
   return (
-    <div className="w-full max-w-[1500px] mx-auto p-2 sm:px-4 ">
+    <div className="w-full  ">
       <Hero />
+      <ExistingProblems />
+      <UrugoFixes />
+      <PropertyFeatures />
     </div>
   );
 }
