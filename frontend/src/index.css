@@ -110,3 +110,7 @@
 
 }
 
+
+*{
+  scroll-behavior: smooth;
+}

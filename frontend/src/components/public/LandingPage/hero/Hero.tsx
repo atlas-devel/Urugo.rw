@@ -4,7 +4,7 @@ import Navbar from "./Navbar";
 
 function Hero() {
   return (
-    <div className="min-h-screen w-full p-2 px-6 lg:px-24   max-w-[2000px]  mx-auto">
+    <div className=" h-fit w-full p-2 px-6 lg:px-30  max-w-[2000px]  mx-auto">
       <Navbar />
       <HeroContent />
       <CurrentStats />

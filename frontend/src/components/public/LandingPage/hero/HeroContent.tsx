@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 function HeroContent() {
   return (
-    <div className="mt-4 relative w-full h-[70vh] min-h-[500px] overflow-hidden rounded-2xl bg-blue-700  ">
+    <div className="mt-4 relative w-full h-[70vh] min-h-[500px] max-h-[700px] overflow-hidden rounded-2xl bg-blue-700  ">
       {/* Text Content & CTAs */}
       <div className="absolute space-y-2 inset-0 flex flex-col items-center justify-center text-center  px-4 sm:px-6 lg:px-8">
         {/* Ai symbol */}
@@ -15,13 +15,20 @@ function HeroContent() {
           <p>AI-Powered Rental Management</p>
         </div>
 
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white max-w-6xl ">
+        <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white max-w-6xl ">
           Manage Your Rental <br className="hidden md:block lg:hidden" />{" "}
           Properties with
           <span className="text-white block mt-2">AI-Powered Simplicity</span>
         </h1>
 
-        <p className="mt-6 max-w-2xl text-md text-white pb-4">
+        {/* Short text for small screens */}
+        <p className="mt-6 max-w-2xl text-md text-white pb-4 md:hidden">
+          Urugo helps landlords collect rent online and manage properties from
+          one dashboard.
+        </p>
+
+        {/* Full text for medium to large screens */}
+        <p className="hidden md:block mt-6 max-w-2xl text-md text-white pb-4">
           Urugo helps landlords collect rent online, vet tenants instantly, and
           manage properties from one dashboard. Tenants pay easily and build
           rental credit history.

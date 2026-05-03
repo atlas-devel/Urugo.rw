@@ -2,7 +2,7 @@ import { CreditCard, MessageSquare, Shield } from "lucide-react";
 
 function UrugoFixes() {
   return (
-    <div className=" w-full p-6 lg:px-24 md:py-20 max-w-[2000px]  mx-auto ">
+    <div className=" w-full p-6 lg:px-30 md:py-20 max-w-[2000px]  mx-auto ">
       <div className="flex flex-col items-center justify-center space-y-4 pb-10">
         <h1 className="text-3xl sm:text-4xl  text-gray-800 font-bold text-center">
           Urugo Fixes Everything
@@ -16,11 +16,11 @@ function UrugoFixes() {
           <span className="mb-4 p-4 block text-white bg-linear-to-l from-blue-500 to-blue-700 w-fit rounded-full">
             <CreditCard size={28} />
           </span>
-          <div className="text-center">
+          <div className="text-center ">
             <h1 className="font-semibold text-xl pb-4">
               Online Rent Collection
             </h1>
-            <p className=" text-gray-600">
+            <p className=" text-gray-600 ">
               Pay via MTN Mobile Money or Airtel Money. Automatic receipts. No
               cash. No travel.
             </p>

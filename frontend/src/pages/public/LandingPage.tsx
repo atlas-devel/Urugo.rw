@@ -1,7 +1,8 @@
-import ExistingProblems from "../../components/public/ExistingProblems/ExistingProblems";
-import PropertyFeatures from "../../components/public/Features/PropertyFeatures";
-import Hero from "../../components/public/hero/Hero";
-import UrugoFixes from "../../components/public/UrugoFixes/UrugoFixes";
+import ExistingProblems from "../../components/public/LandingPage/problems/ExistingProblems";
+import Hero from "../../components/public/LandingPage/hero/Hero";
+import UrugoFixes from "../../components/public/LandingPage/fixes/UrugoFixes";
+import ProcessFeaturesLandLord from "../../components/public/LandingPage/features/ProcessFeaturesLandLord";
+import ProcessFeaturesTenants from "../../components/public/LandingPage/features/ProcessFeaturesTenants";
 
 function LandingPage() {
   return (
@@ -9,7 +10,8 @@ function LandingPage() {
       <Hero />
       <ExistingProblems />
       <UrugoFixes />
-      <PropertyFeatures />
+      <ProcessFeaturesLandLord />
+      <ProcessFeaturesTenants />
     </div>
   );
 }
