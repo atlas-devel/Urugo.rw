@@ -16,11 +16,11 @@ function UrugoFixes() {
           <span className="mb-4 p-4 block text-white bg-linear-to-l from-blue-500 to-blue-700 w-fit rounded-full">
             <CreditCard size={28} />
           </span>
-          <div className="text-center">
+          <div className="text-center ">
             <h1 className="font-semibold text-xl pb-4">
               Online Rent Collection
             </h1>
-            <p className=" text-gray-600">
+            <p className=" text-gray-600 ">
               Pay via MTN Mobile Money or Airtel Money. Automatic receipts. No
               cash. No travel.
             </p>
