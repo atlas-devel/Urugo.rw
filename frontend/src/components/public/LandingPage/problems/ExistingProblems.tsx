@@ -2,7 +2,7 @@ import { Building, Users, Search } from "lucide-react";
 
 function ExistingProblems() {
   return (
-    <div className="bg-gray-50 w-full  p-6  md:py-20 lg:px-24 max-w-[2000px]  mx-auto ">
+    <div className="bg-gray-50 w-full  p-6  md:py-20 lg:px-30 max-w-[2000px]  mx-auto ">
       <div className="flex flex-col items-center justify-center space-y-3 pb-12">
         <h1 className="text-4xl text-gray-800 font-bold">
           Time to Fix Rentals

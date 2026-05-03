@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 function HeroContent() {
   return (
-    <div className="mt-4 relative w-full h-[70vh] min-h-[500px] overflow-hidden rounded-2xl bg-blue-700  ">
+    <div className="mt-4 relative w-full h-[70vh] min-h-[500px] max-h-[700px] overflow-hidden rounded-2xl bg-blue-700  ">
       {/* Text Content & CTAs */}
       <div className="absolute space-y-2 inset-0 flex flex-col items-center justify-center text-center  px-4 sm:px-6 lg:px-8">
         {/* Ai symbol */}

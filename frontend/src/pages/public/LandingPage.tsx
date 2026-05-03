@@ -1,7 +1,7 @@
-import ExistingProblems from "../../components/public/ExistingProblems/ExistingProblems";
-import PropertyFeatures from "../../components/public/Features/PropertyFeatures";
-import Hero from "../../components/public/hero/Hero";
-import UrugoFixes from "../../components/public/UrugoFixes/UrugoFixes";
+import ExistingProblems from "../../components/public/LandingPage/problems/ExistingProblems";
+import PropertyFeatures from "../../components/public/LandingPage/features/PropertyFeatures";
+import Hero from "../../components/public/LandingPage/hero/Hero";
+import UrugoFixes from "../../components/public/LandingPage/fixes/UrugoFixes";
 
 function LandingPage() {
   return (

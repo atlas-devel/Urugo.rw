@@ -2,7 +2,7 @@ import { CreditCard, MessageSquare, Shield } from "lucide-react";
 
 function UrugoFixes() {
   return (
-    <div className=" w-full p-6 lg:px-24 md:py-20 max-w-[2000px]  mx-auto ">
+    <div className=" w-full p-6 lg:px-30 md:py-20 max-w-[2000px]  mx-auto ">
       <div className="flex flex-col items-center justify-center space-y-4 pb-10">
         <h1 className="text-3xl sm:text-4xl  text-gray-800 font-bold text-center">
           Urugo Fixes Everything
