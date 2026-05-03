@@ -2,16 +2,16 @@ import { CreditCard, MessageSquare, Shield } from "lucide-react";
 
 function UrugoFixes() {
   return (
-    <div className=" w-full p-4 md:p-8 max-w-[1500px] mx-auto md:py-20 ">
+    <div className=" w-full p-6 lg:px-24 md:py-20 max-w-[2000px]  mx-auto ">
       <div className="flex flex-col items-center justify-center space-y-4 pb-10">
-        <h1 className="text-4xl text-gray-800 font-bold">
+        <h1 className="text-3xl sm:text-4xl  text-gray-800 font-bold text-center">
           Urugo Fixes Everything
         </h1>
         <p className="text-gray-500 text-lg text-center ">
           One platform. Three solutions for everyone.
         </p>
       </div>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 py-4">
+      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3 py-4">
         <div className="flex flex-col items-center justify-center px-10">
           <span className="mb-4 p-4 block text-white bg-linear-to-l from-blue-500 to-blue-700 w-fit rounded-full">
             <CreditCard size={28} />

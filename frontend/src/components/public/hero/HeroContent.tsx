@@ -15,8 +15,9 @@ function HeroContent() {
           <p>AI-Powered Rental Management</p>
         </div>
 
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white max-w-6xl">
-          Manage Your Rental Properties with
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white max-w-6xl ">
+          Manage Your Rental <br className="hidden md:block lg:hidden" />{" "}
+          Properties with
           <span className="text-white block mt-2">AI-Powered Simplicity</span>
         </h1>
 

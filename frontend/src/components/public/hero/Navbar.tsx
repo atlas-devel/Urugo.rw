@@ -5,7 +5,6 @@ const navbarLinks = [
   { id: 2, name: "Properties", link: "#properties" },
   { id: 3, name: "How It Works", link: "#how-it-works" },
   { id: 4, name: "Pricing", link: "#pricing" },
-  { id: 5, name: "Testimonials", link: "#testimonials" },
 ];
 
 function Navbar() {
@@ -32,6 +31,14 @@ function Navbar() {
             </a>
           </li>
         ))}
+        <li className="hidden xl:block lg:px-3 py-1 text-nowrap  hover:bg-blue-700 rounded-full hover:text-white">
+          <a
+            className="transition-colors duration-300 cursor-pointer text-sm font-semibold"
+            href="#testimonials"
+          >
+            Testmonials
+          </a>
+        </li>
       </ul>
       <div className="hidden md:flex items-center gap-4">
         <Link
