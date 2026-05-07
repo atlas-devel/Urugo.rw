@@ -5,6 +5,7 @@ import prop3 from "@/assets/landingPage/prop2.jpg";
 import prop5 from "@/assets/landingPage/prop4.jpg";
 import prop6 from "@/assets/landingPage/prop5.jpg";
 import { Link } from "react-router-dom";
+import { Lock } from "lucide-react";
 
 const featuredData = [
   {
@@ -109,7 +110,7 @@ function AvailablePropeties() {
                   <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
                     <Link
                       to="/details"
-                      className="w-full flex items-center justify-center gap-2 text-blue-600 hover:text-blue-700 font-semibold group "
+                      className="w-full flex items-center justify-center gap-2 text-blue-700 hover:text-blue-800 font-semibold group "
                     >
                       View Details
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -175,7 +176,7 @@ function AvailablePropeties() {
           </div>
         </div>
       </div>
-      <div className="flex justify-center w-full">
+      <div className="flex justify-center w-full mt-6">
         <Link
           to="/register"
           className="text-nowrap z-1 overflow-hidden text-blue-700 relative group duration-300 transition-colors  hover:text-white p-1.5 font-semibold lg:px-6 cursor-pointer rounded-md border-2 border-blue-700 hover:border-white"
@@ -185,11 +186,14 @@ function AvailablePropeties() {
         </Link>
       </div>
       {/* sign in/up */}
-      <div className="flex flex-col p-12 items-center justify-center space-y-4 mt-16 bg-linear-to-l from-blue-600 to-blue-700">
-        <h1 className="text-3xl font-semibold text-white">
+      <div className="flex flex-col p-6 md:p-12 items-center justify-center space-y-4 mt-16 bg-linear-to-l from-blue-600 to-blue-700 rounded-2xl text-center">
+        <span className="text-white">
+          <Lock />
+        </span>
+        <h1 className="text-2xl sm:text-3xl font-semibold text-white">
           Want to see full property details?
         </h1>
-        <p>
+        <p className="text-gray-200">
           Create a free account to view landlord contact, schedule viewings, and
           apply for properties.
         </p>
@@ -199,18 +203,17 @@ function AvailablePropeties() {
             className="text-nowrap bg-blue-700 z-1 overflow-hidden text-white relative group duration-300 transition-colors hover:text-blue-700 p-1.5 font-semibold lg:px-8 cursor-pointer rounded-md border-2 border-white hover:border-blue-700"
           >
             <span className="bg-white absolute inset-0 translate-y-12 group-hover:translate-0 -z-1 duration-300  " />
-            Sign In
+            Sign Up Free
           </Link>
           <Link
-            to="/register"
-            className="text-nowrap z-1 overflow-hidden text-blue-700 relative group duration-300 transition-colors  hover:text-white p-1.5 font-semibold lg:px-6 cursor-pointer rounded-md border-2 border-blue-700 hover:border-white"
+            to="/login"
+            className="text-nowrap bg-blue-700 z-1 overflow-hidden text-white relative group duration-300 transition-colors hover:text-blue-700 p-1.5 font-semibold lg:px-8 cursor-pointer rounded-md border-2 border-white hover:border-blue-700"
           >
-            <span className="bg-blue-700 absolute inset-0 translate-y-12 group-hover:translate-0  -z-1 duration-300  " />
-            Get Started
+            <span className="bg-white absolute inset-0 translate-y-12 group-hover:translate-0 -z-1 duration-300  " />
+            Learn More
           </Link>
         </div>
       </div>
-      <div></div>
     </div>
   );
 }
