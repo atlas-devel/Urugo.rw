@@ -8,6 +8,7 @@ import AppLogo from "../ui/AppLogo";
 import ToggleTheme from "./toggleTheme/ToggleTheme";
 import { NavbarProvider } from "../../../../context/navbar_context/NavbarProvider";
 
+
 function Navigation() {
   return (
     <NavbarProvider>

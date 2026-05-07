@@ -8,7 +8,7 @@ function Ai_Info() {
         <h1 className="text-3xl sm:text-4xl text-gray-800 font-bold text-center">
           Meet Your AI Rental Assistant
         </h1>
-        <p className="text-gray-500 text-lg text-center max-w-2xl">
+        <p className="text-gray-500 max-md:text-md text-lg text-center max-w-2xl">
           No forms. No complicated searches. Just describe what you want in
           plain English.
         </p>

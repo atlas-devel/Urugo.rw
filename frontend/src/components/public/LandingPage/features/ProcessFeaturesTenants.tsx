@@ -12,13 +12,13 @@ function ProcessFeaturesTenants() {
           <h1 className="text-3xl lg:text-4xl font-bold ">
             Rent Smarter, Not Harder
           </h1>
-          <p className="text-gray-600 text-lg md:pr-20">
+          <p className="text-gray-600  md:pr-20">
             Pay rent from anywhere. Build credit history. Never lose a receipt
             again.
           </p>
         </div>
-        <div>
-          <div className="flex  items-start md:items-center gap-2 mb-4 text-lg">
+        <div className="text-md md:text-base lg:text-lg ">
+          <div className="flex  items-start md:items-center gap-2 mb-4 ">
             <span className="text-green-500 bg-green-100 rounded-full p-1.5">
               <CheckCircle size={18} />
             </span>
@@ -27,7 +27,7 @@ function ProcessFeaturesTenants() {
               traveling
             </p>
           </div>
-          <div className="flex items-center gap-2 mb-4 text-lg">
+          <div className="flex items-center gap-2 mb-4 ">
             <span className="text-green-500 bg-green-100 rounded-full p-1.5">
               <CheckCircle size={18} />
             </span>
@@ -36,7 +36,7 @@ function ProcessFeaturesTenants() {
               properties
             </p>
           </div>
-          <div className="flex items-center gap-2 mb-4 text-lg">
+          <div className="flex items-center gap-2 mb-4 ">
             <span className="text-green-500 bg-green-100 rounded-full p-1.5">
               <CheckCircle size={18} />
             </span>
@@ -44,7 +44,7 @@ function ProcessFeaturesTenants() {
               Digital Receipts - Instant payment proof. No more disputes
             </p>
           </div>
-          <div className="flex items-center gap-2 mb-4 text-lg">
+          <div className="flex items-center gap-2 mb-4 ">
             <span className="text-green-500 bg-green-100 rounded-full p-1.5">
               <CheckCircle size={18} />
             </span>
@@ -52,7 +52,7 @@ function ProcessFeaturesTenants() {
               View Lease Online - Access your contract anytime from your phone
             </p>
           </div>
-          <div className="flex items-center gap-2 mb-4 text-lg">
+          <div className="flex items-center gap-2 mb-4 ">
             <span className="text-green-500 bg-green-100 rounded-full p-1.5">
               <CheckCircle size={18} />
             </span>

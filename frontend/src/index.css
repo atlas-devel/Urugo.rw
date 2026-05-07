@@ -122,11 +122,11 @@
       100% { transform: translateX(-50%); }
     }
 .animate-infinite-scroll {
-      animation: infiniteScroll 25s linear infinite;
+      animation: infiniteScroll 40s linear infinite;
       width: max-content; 
 }
 .animate-infinite-scroll:hover {
-            animation-play-state: paused;
+      animation-play-state: paused;
   }
 
 .prop-scroll{
@@ -134,3 +134,4 @@
   -ms-overflow-style: none;  /* Internet Explorer 10+ */
   
 }
+

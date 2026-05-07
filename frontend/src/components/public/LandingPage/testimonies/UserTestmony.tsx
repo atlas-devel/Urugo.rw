@@ -1,6 +1,11 @@
+import { Link } from "react-router-dom";
+
 function UserTestmony() {
   return (
-    <div className="bg-gray-50 w-full p-6 lg:px-30 md:py-20 max-w-[2000px] mx-auto ">
+    <div
+      id="testmonials"
+      className=" w-full p-6 lg:px-30 md:py-20 max-w-[2000px] mx-auto "
+    >
       <div className="flex flex-col items-center justify-center space-y-4 pb-10">
         <p className="px-4 py-0.5 rounded-full bg-blue-100 w-fit text-blue-700 text-sm font-medium">
           Testmonies
@@ -67,6 +72,28 @@ function UserTestmony() {
             </span>
           </div>
         </div>
+      </div>
+      <div className="flex flex-col p-6 md:p-12 items-center justify-center space-y-4 mt-16 bg-linear-to-l from-blue-600 to-blue-700 rounded-2xl text-center">
+        <h1 className="text-2xl sm:text-3xl font-semibold text-white">
+          Ready to Simplify Your Rental Management?
+        </h1>
+        <p className="text-gray-200 md:px-30">
+          Join hundreds of landlords and tenants using Urugo to make renting
+          easier. No more endless walks with brokers. <br className="hidden xl:block"/> No more cash payment
+          hassles.
+        </p>
+        <div className="flex flex-col md:flex-row items-center gap-4">
+          <Link
+            to="/login"
+            className="text-nowrap bg-blue-700 z-1 overflow-hidden text-white relative group duration-300 transition-colors hover:text-blue-700 p-1.5 font-semibold lg:px-8 cursor-pointer rounded-md border-2 border-white hover:border-blue-700"
+          >
+            <span className="bg-white absolute inset-0 translate-y-12 group-hover:translate-0 -z-1 duration-300  " />
+            Get Started Now
+          </Link>
+        </div>
+        <p className="max-md:text-xs text-center text-gray-300">
+          No credit card required. Free for tenants forever.
+        </p>
       </div>
     </div>
   );

@@ -23,3 +23,10 @@ export const languagesToSwitchWithFlags: Language[] = [
     language: "French",
   },
 ];
+
+export const navbarLinks = [
+  { id: 1, name: "Features", link: "#features" },
+  { id: 2, name: "Properties", link: "#properties" },
+  { id: 3, name: "How It Works", link: "#how-it-works" },
+  { id: 4, name: "Pricing", link: "#pricing" },
+];

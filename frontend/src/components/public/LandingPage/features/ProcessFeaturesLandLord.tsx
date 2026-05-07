@@ -7,7 +7,7 @@ function ProcessFeaturesLandLord() {
       className="flex flex-col md:flex-row md:gap-2 lg:gap-8 bg-gray-50 w-full  p-6  md:py-20 lg:px-30 max-w-[2000px]  mx-auto "
     >
       {/* info */}
-      <div>
+      <div className="text-md md:text-base lg:text-lg   ">
         <div className="space-y-6 mb-10">
           <p className="px-4 py-0.5 rounded-full bg-blue-100 w-fit text-blue-700 text-sm font-medium">
             For Landlords
@@ -15,13 +15,13 @@ function ProcessFeaturesLandLord() {
           <h1 className="text-3xl lg:text-4xl font-bold ">
             Everything You Need to Manage Your Properties
           </h1>
-          <p className="text-gray-600 text-lg md:pr-20">
+          <p className="text-gray-600  md:pr-20">
             Stop using notebooks and Excel. Get a complete property management
             dashboard.
           </p>
         </div>
         <div>
-          <div className="flex  items-start md:items-center gap-2 mb-4 text-lg">
+          <div className="flex  items-start md:items-center gap-2 mb-4 ">
             <span className="text-green-500 bg-green-100 rounded-full p-1.5">
               <CheckCircle size={18} />
             </span>
@@ -30,7 +30,7 @@ function ProcessFeaturesLandLord() {
               glance
             </p>
           </div>
-          <div className="flex items-center gap-2 mb-4 text-lg">
+          <div className="flex items-center gap-2 mb-4 ">
             <span className="text-green-500 bg-green-100 rounded-full p-1.5">
               <CheckCircle size={18} />
             </span>
@@ -39,7 +39,7 @@ function ProcessFeaturesLandLord() {
               bank
             </p>
           </div>
-          <div className="flex items-center gap-2 mb-4 text-lg">
+          <div className="flex items-center gap-2 mb-4 ">
             <span className="text-green-500 bg-green-100 rounded-full p-1.5">
               <CheckCircle size={18} />
             </span>
@@ -47,7 +47,7 @@ function ProcessFeaturesLandLord() {
               Blacklist Check - Search tenant history before signing lease
             </p>
           </div>
-          <div className="flex items-center gap-2 mb-4 text-lg">
+          <div className="flex items-center gap-2 mb-4 ">
             <span className="text-green-500 bg-green-100 rounded-full p-1.5">
               <CheckCircle size={18} />
             </span>
@@ -55,7 +55,7 @@ function ProcessFeaturesLandLord() {
               Automated Reminders - SMS and email reminders before due date
             </p>
           </div>
-          <div className="flex items-center gap-2 mb-4 text-lg">
+          <div className="flex items-center gap-2 mb-4 ">
             <span className="text-green-500 bg-green-100 rounded-full p-1.5">
               <CheckCircle size={18} />
             </span>
@@ -63,7 +63,7 @@ function ProcessFeaturesLandLord() {
               Digital Lease Agreements - Sign online, store in cloud
             </p>
           </div>
-          <div className="flex items-center gap-2 mb-4 text-lg">
+          <div className="flex items-center gap-2 mb-4 ">
             <span className="text-green-500 bg-green-100 rounded-full p-1.5">
               <CheckCircle size={18} />
             </span>
