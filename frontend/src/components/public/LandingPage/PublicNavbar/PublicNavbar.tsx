@@ -1,18 +1,14 @@
 import { Link } from "react-router-dom";
+import { navbarLinks } from "../../../../data/navbarData";
 
-const navbarLinks = [
-  { id: 1, name: "Features", link: "#features" },
-  { id: 2, name: "Properties", link: "#properties" },
-  { id: 3, name: "How It Works", link: "#how-it-works" },
-  { id: 4, name: "Pricing", link: "#pricing" },
-];
+import { MenuIcon } from "lucide-react";
 
-function Navbar() {
+function PublicNavbar() {
   return (
-    <nav className="flex items-center justify-between py-1 pb-4 ">
+    <nav className="h-fit w-full p-2 px-6 lg:px-30  max-w-[2000px]  mx-auto sticky top-0 bg-white z-50 flex items-center justify-between py-3  ">
       <Link
         to="/"
-        className="flex items-center uppercase font-bold text-2xl text-blue-700"
+        className="flex bg-red-500 items-center uppercase font-bold text-2xl text-blue-700"
       >
         <span>Urugo</span>
         <span className="translate-y-1.5 text-xs  lowercase">rw</span>
@@ -56,8 +52,11 @@ function Navbar() {
           Get Started
         </Link>
       </div>
+      <span className="bg-red-800">
+        <MenuIcon />
+      </span>
     </nav>
   );
 }
 
-export default Navbar;
+export default PublicNavbar;

@@ -45,7 +45,11 @@ const featuredData = [
   },
 ];
 
-function AvailablePropeties() {
+function AvailablePropeties({
+  setIsRegisterOpen,
+}: {
+  setIsRegisterOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
   return (
     <div className=" w-full p-6 lg:px-30 md:py-20 max-w-[2000px]  mx-auto ">
       <div className=" flex items-center gap-3 mx-auto my-6 px-4 py-0.5 rounded-full bg-green-100 w-fit text-green-700 text-sm font-medium">
@@ -72,7 +76,7 @@ function AvailablePropeties() {
             {featuredData.map((prop, idx) => (
               <div
                 key={`first-${idx}`}
-                className="shrink-0 w-[320px] md:w-[380px] bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border border-gray-100 flex flex-col"
+                className="shrink-0 w-[320px] md:w-95 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border border-gray-100 flex flex-col"
               >
                 <div className="h-56 bg-gray-200 overflow-hidden relative">
                   <img
@@ -86,7 +90,7 @@ function AvailablePropeties() {
                   </div>
                 </div>
 
-                <div className="p-5 flex flex-col flex-grow">
+                <div className="p-5 flex flex-col grow">
                   <div className="space-y-1 mb-4">
                     <h2 className="text-lg font-bold text-gray-900 line-clamp-1">
                       {prop.title}
@@ -108,13 +112,13 @@ function AvailablePropeties() {
                   </div>
 
                   <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <Link
-                      to="/details"
-                      className="w-full flex items-center justify-center gap-2 text-blue-700 hover:text-blue-800 font-semibold group "
+                    <button
+                      onClick={() => setIsRegisterOpen(true)}
+                      className="w-full cursor-pointer flex items-center justify-center gap-2 text-blue-600 hover:text-blue-700 font-semibold group "
                     >
                       View Details
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </Link>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -126,7 +130,7 @@ function AvailablePropeties() {
             {featuredData.map((prop, idx) => (
               <div
                 key={`second-${idx}`}
-                className="shrink-0 w-[320px] md:w-[380px] bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border border-gray-100 flex flex-col"
+                className="shrink-0 w-[320px] md:w-95 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border border-gray-100 flex flex-col"
               >
                 <div className="h-56 bg-gray-200 overflow-hidden relative">
                   <img
@@ -140,7 +144,7 @@ function AvailablePropeties() {
                   </div>
                 </div>
 
-                <div className="p-5 flex flex-col flex-grow">
+                <div className="p-5 flex flex-col grow">
                   <div className="space-y-1 mb-4">
                     <h2 className="text-lg font-bold text-gray-900 line-clamp-1">
                       {prop.title}
@@ -161,14 +165,14 @@ function AvailablePropeties() {
                     ))}
                   </div>
 
-                  <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <Link
-                      to="/details"
-                      className="w-full flex items-center justify-center gap-2 text-blue-600 hover:text-blue-700 font-semibold group "
+                  <div className="pt-4border-t border-gray-100 flex items-center justify-between">
+                    <button
+                      onClick={() => setIsRegisterOpen(true)}
+                      className="w-full cursor-pointer flex items-center justify-center gap-2 text-blue-600 hover:text-blue-700 font-semibold group "
                     >
                       View Details
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </Link>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -181,8 +185,9 @@ function AvailablePropeties() {
           to="/register"
           className="text-nowrap z-1 overflow-hidden text-blue-700 relative group duration-300 transition-colors  hover:text-white p-1.5 font-semibold lg:px-6 cursor-pointer rounded-md border-2 border-blue-700 hover:border-white"
         >
-          <span className="bg-blue-700 absolute inset-0 translate-y-12 group-hover:translate-0  -z-1 duration-300  " />
+          <span className="flex bg-blue-700 absolute inset-0 translate-y-12 group-hover:translate-0  -z-1 duration-300  " />
           Browse All Properties
+          <ArrowRight className="inline ml-2" />
         </Link>
       </div>
       {/* sign in/up */}
@@ -197,7 +202,7 @@ function AvailablePropeties() {
           Create a free account to view landlord contact, schedule viewings, and
           apply for properties.
         </p>
-        <div className="hidden md:flex items-center gap-4">
+        <div className="flex flex-col md:flex-row items-center gap-4">
           <Link
             to="/login"
             className="text-nowrap bg-blue-700 z-1 overflow-hidden text-white relative group duration-300 transition-colors hover:text-blue-700 p-1.5 font-semibold lg:px-8 cursor-pointer rounded-md border-2 border-white hover:border-blue-700"

@@ -1,6 +1,9 @@
 function PlatformSteps() {
   return (
-    <div className="w-full p-6 lg:px-30 md:py-20 max-w-[2000px] mx-auto ">
+    <div
+      id="how-it-works"
+      className="w-full p-6 lg:px-30 md:py-20 max-w-[2000px] mx-auto "
+    >
       <div className="flex flex-col items-center justify-center space-y-4 pb-10">
         <p className="px-4 py-0.5 rounded-full bg-indigo-100 w-fit text-indigo-700 text-sm font-medium">
           How It Works
