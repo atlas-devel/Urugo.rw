@@ -1,14 +1,20 @@
 import { Link } from "react-router-dom";
 import { navbarLinks } from "../../../../data/navbarData";
 
-import { MenuIcon } from "lucide-react";
+import { MenuIcon, X } from "lucide-react";
 
-function PublicNavbar() {
+function PublicNavbar({
+  setShowPublicMenu,
+  ShowPublicMenu,
+}: {
+  setShowPublicMenu: React.Dispatch<React.SetStateAction<boolean>>;
+  ShowPublicMenu: boolean;
+}) {
   return (
-    <nav className="h-fit w-full p-2 px-6 lg:px-30  max-w-[2000px]  mx-auto sticky top-0 bg-white z-50 flex items-center justify-between py-3  ">
+    <nav className="h-fit w-full p-2 px-6 lg:px-30  max-w-[2000px]  mx-auto sticky top-0 bg-white z-50 flex items-center justify-between py-4 md:py-3  ">
       <Link
         to="/"
-        className="flex bg-red-500 items-center uppercase font-bold text-2xl text-blue-700"
+        className="flex items-center uppercase font-bold text-2xl text-blue-700"
       >
         <span>Urugo</span>
         <span className="translate-y-1.5 text-xs  lowercase">rw</span>
@@ -52,9 +58,18 @@ function PublicNavbar() {
           Get Started
         </Link>
       </div>
-      <span className="bg-red-800">
-        <MenuIcon />
-      </span>
+      <button
+        onClick={() => {
+          setShowPublicMenu((prev) => !prev);
+        }}
+        className="md:hidden  duration-300 cursor-pointer text-blue-900"
+      >
+        {ShowPublicMenu ? (
+          <X size={22} className="text-blue-700" />
+        ) : (
+          <MenuIcon size={22} />
+        )}
+      </button>
     </nav>
   );
 }

@@ -18,7 +18,7 @@ import AddUser from "../pages/admin/management/UserRegistration";
 import LoginPage from "../pages/public/LoginPage";
 import RegisterPage from "../pages/public/RegisterPage";
 import ProtectedRoute from "./ProtectedRoute";
-import TestPage from "../pages/Test";
+
 import LandingPage from "../pages/public/LandingPage";
 
 function AppRoutes() {
@@ -61,7 +61,7 @@ function AppRoutes() {
       <Route>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/ui" element={<TestPage />} />
+
         <Route path="/" element={<LandingPage />} />
       </Route>
       {/* Catch all - redirect to dashboard */}

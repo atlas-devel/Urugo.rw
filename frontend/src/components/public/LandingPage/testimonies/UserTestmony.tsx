@@ -91,7 +91,7 @@ function UserTestmony() {
             Get Started Now
           </Link>
         </div>
-        <p className="text-center text-gray-300">
+        <p className="max-md:text-xs text-center text-gray-300">
           No credit card required. Free for tenants forever.
         </p>
       </div>

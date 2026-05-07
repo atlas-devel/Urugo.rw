@@ -13,7 +13,7 @@ function ExistingProblems() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2  lg:grid-cols-3 gap-8  ">
         <div className=" bg-white  p-6 rounded-xl shadow-sm">
-          <span className="rounded-lg mb-2 text-red-500 bg-red-100 w-fit block p-4 ">
+          <span className="rounded-lg mb-2 text-red-500 bg-red-100 w-fit block p-2 md:p-4 ">
             <Building size={30} />
           </span>
           <p className="font-semibold text-2xl">For Landlords</p>
@@ -25,7 +25,7 @@ function ExistingProblems() {
           </ul>
         </div>
         <div className="bg-white  p-8 rounded-xl shadow-sm">
-          <span className="rounded-lg mb-2 text-green-500 bg-green-100 w-fit block p-4 ">
+          <span className="rounded-lg mb-2 text-green-500 bg-green-100 w-fit block p-2 md:p-4 ">
             <Users size={30} />
           </span>
           <p className="font-semibold text-2xl">For Tenants</p>
@@ -37,7 +37,7 @@ function ExistingProblems() {
           </ul>
         </div>
         <div className="bg-white  p-8 rounded-xl shadow-sm ">
-          <span className="rounded-lg mb-2 text-blue-500 bg-blue-100 w-fit block p-4 ">
+          <span className="rounded-lg mb-2 text-blue-500 bg-blue-100 w-fit block p-2 md:p-4 ">
             <Search size={30} />
           </span>
           <p className="font-semibold text-2xl">For Property Seekers</p>
