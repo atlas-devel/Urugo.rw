@@ -3,6 +3,7 @@ import Hero from "../../components/public/LandingPage/hero/Hero";
 import UrugoFixes from "../../components/public/LandingPage/fixes/UrugoFixes";
 import ProcessFeaturesLandLord from "../../components/public/LandingPage/features/ProcessFeaturesLandLord";
 import ProcessFeaturesTenants from "../../components/public/LandingPage/features/ProcessFeaturesTenants";
+import AvailablePropeties from "../../components/public/LandingPage/properties/AvailablePropeties";
 
 function LandingPage() {
   return (
@@ -12,6 +13,7 @@ function LandingPage() {
       <UrugoFixes />
       <ProcessFeaturesLandLord />
       <ProcessFeaturesTenants />
+      <AvailablePropeties />
     </div>
   );
 }

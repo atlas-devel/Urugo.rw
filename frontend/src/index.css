@@ -114,3 +114,23 @@
 *{
   scroll-behavior: smooth;
 }
+
+
+
+@keyframes infiniteScroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+.animate-infinite-scroll {
+      animation: infiniteScroll 25s linear infinite;
+      width: max-content; 
+}
+.animate-infinite-scroll:hover {
+            animation-play-state: paused;
+  }
+
+.prop-scroll{
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  
+}
